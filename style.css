@@ -25,7 +25,7 @@ h1 { margin: 10px 0; }
   gap: 20px;
   justify-content: center;
   align-items: flex-start;
-  flex-wrap: wrap; /* ajuda na responsividade */
+  flex-wrap: wrap;
 }
 
 #left-panel,
@@ -292,7 +292,6 @@ button:hover {
 }
 #round-winner-btn:hover { background: #2e7d32; }
 
-
 /* ==================== MODAL FIM DE JOGO ==================== */
 .modal {
   position: fixed;
@@ -324,9 +323,103 @@ button:hover {
   to { opacity: 1; transform: scale(1); }
 }
 
-/* ==================== RESPONSIVIDADE ==================== */
+/* ==================== RESPONSIVIDADE COMPLETA ==================== */
+
+/* Tablets / telas médias */
 @media (max-width: 1200px) {
-  #game-container { flex-direction: column; }
-  #left-panel, #right-panel { min-width: auto; }
-  #mesa-central { max-width: 400px; }
+  #game-container {
+    flex-direction: column;
+    gap: 20px;
+    align-items: center;
+  }
+
+  #left-panel, #right-panel {
+    width: 90%;
+    min-width: auto;
+  }
+
+  #mesa-central {
+    width: 80%;
+    max-width: 400px;
+    aspect-ratio: 1;
+    margin: 0 auto;
+  }
+}
+
+/* Celulares (até 768px) */
+@media (max-width: 768px) {
+  #game-container {
+    flex-direction: column;
+    gap: 15px;
+    align-items: center;
+  }
+
+  #left-panel, #right-panel {
+    width: 95%;
+    min-width: auto;
+    padding: 15px;
+  }
+
+  #mesa-central {
+    width: 90%;
+    max-width: 300px;
+    aspect-ratio: 1;
+    margin: 0 auto;
+  }
+
+  .mesa-slot, .mesa-slot-base, #trunfo-slot {
+    width: 30px;
+    height: 45px;
+    font-size: 0.6rem;
+  }
+
+  #slot-j1, #slot-j2, #slot-j3, #slot-j4,
+  #slot-base-j1, #slot-base-j2, #slot-base-j3, #slot-base-j4 {
+    transform: translate(-50%, -50%);
+  }
+
+  .mao {
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  .carta {
+    width: 40px;
+    height: 60px;
+    font-size: 0.8rem;
+  }
+
+  .modal-content {
+    width: 90%;
+    padding: 20px;
+  }
+
+  #round-winner-card .carta {
+    width: 50px;
+    height: 75px;
+    font-size: 1rem;
+  }
+}
+
+/* Telas muito pequenas (<480px) */
+@media (max-width: 480px) {
+  #mesa-central { max-width: 250px; }
+
+  .mesa-slot, .mesa-slot-base, #trunfo-slot {
+    width: 25px;
+    height: 38px;
+    font-size: 0.5rem;
+  }
+
+  .carta {
+    width: 35px;
+    height: 55px;
+    font-size: 0.7rem;
+  }
+
+  #round-winner-card .carta {
+    width: 40px;
+    height: 60px;
+    font-size: 0.9rem;
+  }
 }
