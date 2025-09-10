@@ -1,0 +1,48 @@
+[Início: IA vai jogar]
+        |
+        v
+[1️⃣ Filtrar cartas válidas]
+- Se houver leadingSuit (primeira carta da ronda?):
+    - Deve seguir naipe se tiver
+- Caso contrário, todas as cartas são válidas
+        |
+        v
+[2️⃣ Priorizar Ás]
+- Se carta é Ás e não é trunfo:
+    - Se naipe ainda não saiu:
+        -> aumentar prioridade
+        (preferir jogar Ás primeiro de um naipe seguro)
+        |
+        v
+[3️⃣ Avaliar 7]
+- Se carta é 7:
+    - Última carta da mão OU única carta jogável
+        -> pode jogar
+    - Ás do mesmo naipe já saiu?
+        -> pode jogar
+    - Caso contrário:
+        -> reduzir prioridade (guardar)
+        |
+        v
+[4️⃣ Simular cada carta]
+- Para cada carta válida:
+    - Simular se ganha a ronda
+    - Classificar em:
+        - cartasGanham
+        - cartasPerdem
+        |
+        v
+[5️⃣ Escolha final]
+- Se há cartas que ganham:
+    - Jogar a carta com maior valor de pontos
+    - Respeitando prioridades (Ás > 7)
+    - Evitar 7 se prioridade negativa (guardar)
+- Se não há cartas que ganham:
+    - Jogar a carta de menor valor (perder ronda)
+    - Respeitando prioridades
+        |
+        v
+[6️⃣ Retornar índice da carta escolhida]
+        |
+        v
+[Fim: jogar carta com attemptPlayCard()]

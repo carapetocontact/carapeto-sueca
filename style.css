@@ -1,0 +1,332 @@
+/* ==================== BASE ==================== */
+body {
+  font-family: 'Segoe UI', sans-serif;
+  background: grey;
+  color: #fff;
+  margin: 0;
+  padding: 0;
+  text-align: center;
+}
+
+h1 { margin: 10px 0; }
+
+/* ==================== LAYOUT ==================== */
+.main-layout {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  padding: 20px;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+#game-container {
+  display: flex;
+  gap: 20px;
+  justify-content: center;
+  align-items: flex-start;
+  flex-wrap: wrap; /* ajuda na responsividade */
+}
+
+#left-panel,
+#right-panel {
+  flex: 1;
+  min-width: 300px;
+  background: #1a472a;
+  border-radius: 15px;
+  padding: 20px;
+}
+
+#right-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+#bottom-panel {
+  background: #1a472a;
+  border-radius: 15px;
+  padding: 20px;
+}
+
+/* ==================== PAINEL DE INFORMAÇÕES ==================== */
+#painel {
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  background: #016646;
+  padding: 10px;
+  border-radius: 10px;
+  margin: 10px 0;
+}
+
+#painel div {
+  font-size: 1rem;
+  font-weight: bold;
+}
+
+/* ==================== MESA CENTRAL ==================== */
+#mesa-central {
+  width: 100%;
+  max-width: 500px;
+  aspect-ratio: 1;
+  margin: 0 auto;
+  background: #0a540e;
+  border: 4px solid #000;
+  border-radius: 50%;
+  position: relative;
+}
+
+/* Slots base */
+.mesa-slot-base {
+  position: absolute;
+  width: 40px;
+  height: 40px;
+  background: #222;
+  color: white;
+  border: 2px solid black;
+  border-radius: 50%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-weight: bold;
+  font-size: 0.8rem;
+  z-index: 1;
+}
+
+/* Posicionamento slots base */
+#slot-base-j1 { bottom: 20px; left: 50%; transform: translateX(-50%); }
+#slot-base-j2 { right: 20px; top: 50%; transform: translateY(-50%); }
+#slot-base-j3 { top: 20px; left: 50%; transform: translateX(-50%); }
+#slot-base-j4 { left: 20px; top: 50%; transform: translateY(-50%); }
+
+/* Slots para cartas */
+.mesa-slot {
+  position: absolute;
+  width: 50px;
+  height: 75px;
+  border: 2px solid rgba(255,255,255,0.3);
+  border-radius: 6px;
+  background: rgba(255,255,255,0.1);
+  z-index: 2;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+/* Posicionamento slots de cartas */
+#slot-j1 { bottom: 80px; left: 50%; transform: translateX(-50%); }
+#slot-j2 { right: 80px; top: 50%; transform: translateY(-50%); }
+#slot-j3 { top: 80px; left: 50%; transform: translateX(-50%); }
+#slot-j4 { left: 80px; top: 50%; transform: translateY(-50%); }
+
+/* Cartas jogadas */
+.carta-jogada {
+  position: relative;
+  width: 50px;
+  height: 75px;
+  border: 2px solid black;
+  border-radius: 6px;
+  background: white;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 3;
+  margin: 0;
+}
+
+/* Trunfo */
+#trunfo-slot {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  width: 50px;
+  height: 75px;
+  border: 2px solid #fff;
+  border-radius: 6px;
+  background: #fff;
+  color: #000;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-weight: bold;
+  z-index: 2;
+}
+#trunfo-slot.red { color: red; }
+
+/* ==================== CARTAS ==================== */
+.carta {
+  width: 50px;
+  height: 75px;
+  border: 2px solid black;
+  border-radius: 6px;
+  background: #fff;
+  color: #000;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-weight: bold;
+  font-size: 1rem;
+  cursor: pointer;
+  user-select: none;
+  margin: 2px;
+  transition: transform 0.3s, opacity 0.3s, box-shadow 0.3s;
+}
+.carta.red { color: red; }
+.carta:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+}
+.carta.disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+.carta.disabled:hover {
+  transform: none;
+  box-shadow: 0 0 5px red;
+}
+.carta-costa {
+  width: 50px;
+  height: 80px;
+  background: repeating-linear-gradient(
+    45deg,
+    #8a1e1e,
+    #8a1e1e 10px,
+    #f63b3b 10px,
+    #f63b3b 20px
+  );
+  border: 1px solid #000;
+  border-radius: 5px;
+}
+
+/* ==================== MÃOS ==================== */
+#maos {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.mao {
+  background: rgba(0,0,0,0.2);
+  padding: 10px;
+  border-radius: 8px;
+  display: flex;
+  justify-content: center;
+  margin: 10px 0;
+}
+
+.active .carta {
+  box-shadow: 0 0 15px 3px yellow;
+}
+
+/* ==================== LIXOS ==================== */
+#lixos {
+  display: flex;
+  justify-content: space-around;
+  margin-top: 20px;
+}
+.lixo-equipa { width: 40%; }
+#lixo1-cartas, #lixo2-cartas {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(30px, 1fr));
+  gap: 5px;
+  justify-items: center;
+  margin-top: 5px;
+}
+
+/* ==================== CONTROLES ==================== */
+button, select {
+  padding: 5px 12px;
+  margin: 5px;
+  border-radius: 5px;
+  border: none;
+  font-weight: bold;
+  cursor: pointer;
+}
+button:hover {
+  background: #1b5e20;
+  color: #fff;
+}
+
+/* ==================== ROUND WINNER ==================== */
+#round-winner {
+  display: none;
+  position: absolute;
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  background: rgba(0,0,0,0.85);
+  color: white;
+  padding: 20px 30px;
+  border-radius: 12px;
+  text-align: center;
+  z-index: 1000;
+  box-shadow: 0 0 20px rgba(0,0,0,0.7);
+  animation: fadeIn 0.5s ease-out;
+}
+#round-winner-msg {
+  font-size: 1.5rem;
+  font-weight: bold;
+  margin-bottom: 15px;
+}
+#round-winner-card .carta {
+  width: 70px;
+  height: 105px;
+  font-size: 1.2rem;
+  box-shadow: 0 5px 15px rgba(0,0,0,0.6);
+  transform: rotate(-3deg);
+  transition: transform 0.3s ease;
+}
+#round-winner-card .carta:hover {
+  transform: rotate(0deg) scale(1.05);
+}
+#round-winner-btn {
+  margin-top: 15px;
+  padding: 8px 15px;
+  border: none;
+  border-radius: 6px;
+  font-weight: bold;
+  cursor: pointer;
+  background: #1b5e20;
+  color: white;
+  transition: background 0.3s;
+}
+#round-winner-btn:hover { background: #2e7d32; }
+
+
+/* ==================== MODAL FIM DE JOGO ==================== */
+.modal {
+  position: fixed;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  background: rgba(0,0,0,0.6);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 999;
+}
+.modal.hidden { display: none; }
+.modal-content {
+  background: white;
+  color: black;
+  padding: 30px;
+  border-radius: 15px;
+  text-align: center;
+  box-shadow: 0 0 20px rgba(0,0,0,0.4);
+  animation: fadeIn 0.5s ease-in-out;
+}
+.modal-content h2 { font-size: 2rem; margin-bottom: 10px; }
+.modal-content p { font-size: 1.2rem; margin-bottom: 20px; }
+.fim-jogo-pontos { margin-bottom: 20px; font-weight: bold; }
+
+/* ==================== ANIMAÇÕES ==================== */
+@keyframes fadeIn {
+  from { opacity: 0; transform: scale(0.8); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+/* ==================== RESPONSIVIDADE ==================== */
+@media (max-width: 1200px) {
+  #game-container { flex-direction: column; }
+  #left-panel, #right-panel { min-width: auto; }
+  #mesa-central { max-width: 400px; }
+}
