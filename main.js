@@ -11,6 +11,8 @@ let currentTurn = 0;
 let rondaAtual = 1;
 let lixoEquipa1 = [];
 let lixoEquipa2 = [];
+let baralhadorAtual = 0;
+
 
 let modoJogo;
 let tiposJogador = ["humano", "humano", "humano", "humano"];
@@ -25,6 +27,8 @@ const lixo2CardsEl = document.getElementById("lixo2-cartas");
 const rondaInfo = document.getElementById("ronda-info");
 const turnoInfo = document.getElementById("turno-info");
 const trunfoSlot = document.getElementById("trunfo-slot");
+const trunfoLabel = document.getElementById("trunfo-label");
+
 
 // ---------- utilitárias ----------
 function criarBaralho() {
@@ -50,6 +54,14 @@ function pontosCarta(c) {
     case "J": return 3;
     case "Q": return 2;
     default: return 0;
+  }
+}
+
+function atualizarTrunfoLabel() {
+  if (jogadorComTrunfo !== null) {
+    trunfoLabel.textContent = `Trunfo (J${jogadorComTrunfo + 1})`;
+  } else {
+    trunfoLabel.textContent = "";
   }
 }
 
@@ -209,6 +221,8 @@ function updatePanel() {
     trunfoSlot.className = ["♥","♦"].includes(trunfo.naipe) ? "red" : "";
   }
 
+  atualizarTrunfoLabel();
+
   for (let i = 0; i < 4; i++) {
     const el = document.getElementById(playerIds[i]);
     if (!el) continue;
@@ -233,6 +247,8 @@ function updatePanel() {
     lixo2CardsEl.appendChild(d);
   });
 }
+
+
 
 function updatePointsUI() {
   const p1 = lixoEquipa1.reduce((s, c) => s + pontosCarta(c), 0);
@@ -271,7 +287,6 @@ function finalizarJogo() {
 
 // ---------- iniciar novo jogo ----------
 function iniciarNovoJogo() {
-  const baralhador = Number(document.getElementById("select-baralhador-menu").value);
   const deck = embaralhar(criarBaralho());
 
   hands = [[], [], [], []];
@@ -280,18 +295,25 @@ function iniciarNovoJogo() {
   cardsOnTable = [];
   rondaAtual = 1;
 
-  currentTurn = (baralhador + 1) % 4;
-  jogadorComTrunfo = baralhador;
+  currentTurn = (baralhadorAtual + 1) % 4;
+  jogadorComTrunfo = baralhadorAtual;
   trunfo = deck[0];
 
-  for (let i = 0; i < 4; i++) hands[i] = deck.slice(i * 10, (i + 1) * 10);
+  for (let i = 0; i < 4; i++) {
+    hands[i] = deck.slice(i * 10, (i + 1) * 10);
+  }
 
   renderHands();
+  atualizarTrunfoLabel();
 
   if (tiposJogador[currentTurn] === "computador") {
     setTimeout(() => jogadaComputador(currentTurn), 500);
   }
+
+  // 🚀 Passar o baralhador para o próximo jogo
+  baralhadorAtual = (baralhadorAtual + 1) % 4;
 }
+
 
 // ---------- start game ----------
 function startGame(modo, tipos, baralhador) {
@@ -300,10 +322,14 @@ function startGame(modo, tipos, baralhador) {
   document.getElementById("game").style.display = "block";
 
   jogadorHumano = tiposJogador.indexOf("humano");
-  jogadoresComputador = tiposJogador.map((t, i) => t === "computador" ? i : -1).filter(i => i !== -1);
+  jogadoresComputador = tiposJogador
+    .map((t, i) => (t === "computador" ? i : -1))
+    .filter(i => i !== -1);
 
+  baralhadorAtual = baralhador; // guarda o escolhido no menu
   iniciarNovoJogo();
 }
+
 
 // ---------- eventos ----------
 document.getElementById("btn-novo-jogo").onclick = iniciarNovoJogo;
