@@ -218,7 +218,10 @@ function updatePanel() {
 
   if (trunfo) {
     trunfoSlot.textContent = `${trunfo.valor}${trunfo.naipe}`;
-    trunfoSlot.className = ["♥","♦"].includes(trunfo.naipe) ? "red" : "";
+    trunfoSlot.classList.remove("red");
+    if (["♥","♦"].includes(trunfo.naipe)) {
+      trunfoSlot.classList.add("red");
+    }
   }
 
   atualizarTrunfoLabel();
