@@ -396,7 +396,7 @@ button:hover { background: var(--color-button-bg); color: #fff; }
 
   #trunfo-slot {
     top: 5px;
-    right: 2.5px;
+    right: 3px;
     font-size: clamp(0.7rem, 1.5vw, 1rem);
   }
 }
@@ -405,3 +405,4 @@ button:hover { background: var(--color-button-bg); color: #fff; }
   #mesa-central, #maos { max-width: 400px; width: 100%; }
   #left-panel, #right-panel, #bottom-panel { width: 100%; }
 }
+
