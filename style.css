@@ -378,13 +378,13 @@ button:hover { background: var(--color-button-bg); color: #fff; }
 
   #mesa-central, #maos {
     width: 100%;
-    max-width: 400px;
+    max-width: 500px;
     margin: 0 auto;
   }
 }
 
 @media (max-width: 480px) {
-  #mesa-central, #maos { max-width: 400px; }
+  #mesa-central, #maos { max-width: 460px; }
   #left-panel, #right-panel, #bottom-panel { width: 100%; }
 
   #trunfo-label {
@@ -402,6 +402,6 @@ button:hover { background: var(--color-button-bg); color: #fff; }
 }
 
 @media (max-width: 430px) {
-  #mesa-central, #maos { max-width: 280px; width: 100%; }
+  #mesa-central, #maos { max-width: 400px; width: 100%; }
   #left-panel, #right-panel, #bottom-panel { width: 100%; }
 }
