@@ -12,6 +12,7 @@ const listaJogadores = document.getElementById("lista-jogadores");
 let minhaSala = "";
 let meuNome = "";
 let meuIndex = null; // slot do jogador (0 a 3)
+let onlineEstado = null; // estado do jogo enviado pelo servidor
 
 // Entrar na sala
 btnEntrarSala.onclick = () => {
@@ -19,14 +20,12 @@ btnEntrarSala.onclick = () => {
   minhaSala = salaInput.value.trim();
 
   if (!meuNome || !minhaSala) {
-    alert("Por favor, preenche o teu nome e a sala.");
+    alert("Preenche o teu nome e a sala.");
     return;
   }
 
-  // envia evento para servidor
   socket.emit("entrar-sala", { nome: meuNome, salaId: minhaSala });
 
-  // Desativa inputs para evitar mudanças
   nomeInput.disabled = true;
   salaInput.disabled = true;
   btnEntrarSala.disabled = true;
@@ -35,36 +34,40 @@ btnEntrarSala.onclick = () => {
   btnPronto.disabled = false;
 };
 
-// ================= EVENTOS RECEBIDOS =================
+// ================= EVENTOS =================
 
-// Atualiza lista de jogadores na sala
+// Atualiza lista de jogadores
 socket.on("atualizar-jogadores", (jogadores) => {
   listaJogadores.innerHTML = "<strong>Jogadores na sala:</strong><br>" +
     jogadores.map(j => `${j.nome} ${j.pronto ? "(pronto)" : ""}`).join("<br>");
 
-  // Descobre o índice do jogador atual
   const jogador = jogadores.find(j => j.nome === meuNome);
   if (jogador) meuIndex = jogador.index;
 });
 
-// Quando todos os jogadores estão prontos, começar jogo
-socket.on("iniciar-jogo", (nomesJogadores) => {
+// Quando todos prontos, começar jogo
+socket.on("iniciar-jogo", (nomesJogadores, estadoDoServidor) => {
   alert(`O jogo vai começar com: ${nomesJogadores.join(", ")}`);
   btnPronto.disabled = true;
 
-  // Atualiza tiposJogador: humanos = jogadores conectados, restante = computador
-  tiposJogador = ["computador", "computador", "computador", "computador"];
-  nomesJogadores.forEach((nome, i) => {
-    tiposJogador[i] = "humano";
-  });
+  onlineEstado = estadoDoServidor;
 
-  startGame("online", tiposJogador, 0); // baralhador padrão
+  // Atualiza tiposJogador: jogadores conectados = humano
+  tiposJogador = ["computador","computador","computador","computador"];
+  nomesJogadores.forEach((nome,i)=>tiposJogador[i]="humano");
+
+  // Sobrescreve hands, trunfo, turno do main.js
+  hands = onlineEstado.hands;
+  trunfo = onlineEstado.trunfo;
+  jogadorComTrunfo = onlineEstado.jogadorComTrunfo;
+  currentTurn = onlineEstado.currentTurn;
+  baralhadorAtual = onlineEstado.baralhadorAtual;
+
+  startGame("online", tiposJogador, baralhadorAtual);
 });
 
 // Recebe jogada de outro jogador
 socket.on("atualizar-jogada", ({ jogadorIndex, carta }) => {
-  console.log(`Recebido jogada do jogador ${jogadorIndex + 1}: carta ${carta}`);
-  // Chama attemptPlayCard do main.js simulando jogada remota
   if (jogadorIndex !== meuIndex) {
     attemptPlayCard(jogadorIndex, carta);
   }
@@ -77,21 +80,17 @@ function enviarJogada(playerIndex, cardIndex) {
   socket.emit("jogada", { salaId: minhaSala, jogadorIndex: playerIndex, carta: cardIndex });
 }
 
-// ================= NOVO =================
-
 // Sinalizar que estou pronto
 btnPronto.onclick = () => {
   socket.emit("pronto", { salaId: minhaSala });
   btnPronto.disabled = true;
 };
 
-// Substituir attemptPlayCard para enviar jogada ao servidor se for online
+// Substituir attemptPlayCard para multiplayer online
 const attemptPlayCardOriginal = attemptPlayCard;
 attemptPlayCard = function(playerIndex, cardIndex) {
-  if (tiposJogador[playerIndex] === "humano" && playerIndex === meuIndex) {
-    // envia ao servidor
+  if (tiposJogador[playerIndex]==="humano" && playerIndex===meuIndex) {
     enviarJogada(playerIndex, cardIndex);
   }
-  // Chama função original para atualizar UI local
   attemptPlayCardOriginal(playerIndex, cardIndex);
 };

@@ -13,11 +13,11 @@ let lixoEquipa1 = [];
 let lixoEquipa2 = [];
 let baralhadorAtual = 0;
 
-
 let modoJogo;
 let tiposJogador = ["humano", "humano", "humano", "humano"];
 let jogadorHumano = null;
 let jogadoresComputador = [];
+let onlineGame = false; // 🚀 novo: distingue modo online
 
 // DOM
 const pontos1El = document.getElementById("pontos1");
@@ -28,7 +28,6 @@ const rondaInfo = document.getElementById("ronda-info");
 const turnoInfo = document.getElementById("turno-info");
 const trunfoSlot = document.getElementById("trunfo-slot");
 const trunfoLabel = document.getElementById("trunfo-label");
-
 
 // ---------- utilitárias ----------
 function criarBaralho() {
@@ -79,7 +78,7 @@ function renderHands() {
       const d = document.createElement("div");
       d.className = "carta";
 
-      if (tiposJogador[p] === "computador") {
+      if (tiposJogador[p] === "computador" && !onlineGame) {
         d.classList.add("carta-costa");
       } else {
         d.textContent = `${c.valor}${c.naipe}`;
@@ -109,6 +108,17 @@ function renderHands() {
 function attemptPlayCard(playerIndex, cardIndex) {
   if (playerIndex !== currentTurn) return;
 
+  if (onlineGame) {
+    // 🚀 online: apenas envia jogada ao servidor
+    enviarJogada(playerIndex, cardIndex);
+    return;
+  }
+
+  // offline: lógica local
+  jogarCartaLocal(playerIndex, cardIndex);
+}
+
+function jogarCartaLocal(playerIndex, cardIndex) {
   const leadingSuit = cardsOnTable.length > 0 ? cardsOnTable[0].card.naipe : null;
   const played = hands[playerIndex][cardIndex];
 
@@ -135,7 +145,7 @@ function proximoTurno() {
   currentTurn = (currentTurn + 1) % 4;
   renderHands();
 
-  if (tiposJogador[currentTurn] === "computador") {
+  if (!onlineGame && tiposJogador[currentTurn] === "computador") {
     setTimeout(() => jogadaComputador(currentTurn), 500);
   }
 }
@@ -197,7 +207,7 @@ function resolveRound() {
       return;
     }
 
-    if (tiposJogador[currentTurn] === "computador") {
+    if (!onlineGame && tiposJogador[currentTurn] === "computador") {
       setTimeout(() => jogadaComputador(currentTurn), 500);
     }
   }
@@ -250,8 +260,6 @@ function updatePanel() {
     lixo2CardsEl.appendChild(d);
   });
 }
-
-
 
 function updatePointsUI() {
   const p1 = lixoEquipa1.reduce((s, c) => s + pontosCarta(c), 0);
@@ -309,7 +317,7 @@ function iniciarNovoJogo() {
   renderHands();
   atualizarTrunfoLabel();
 
-  if (tiposJogador[currentTurn] === "computador") {
+  if (!onlineGame && tiposJogador[currentTurn] === "computador") {
     setTimeout(() => jogadaComputador(currentTurn), 500);
   }
 
@@ -317,9 +325,8 @@ function iniciarNovoJogo() {
   baralhadorAtual = (baralhadorAtual + 1) % 4;
 }
 
-
 // ---------- start game ----------
-function startGame(modo, tipos, baralhador) {
+function startGame(modo, tipos, baralhador, estadoServidor = null) {
   modoJogo = modo;
   tiposJogador = tipos;
   document.getElementById("game").style.display = "block";
@@ -329,10 +336,27 @@ function startGame(modo, tipos, baralhador) {
     .map((t, i) => (t === "computador" ? i : -1))
     .filter(i => i !== -1);
 
-  baralhadorAtual = baralhador; // guarda o escolhido no menu
-  iniciarNovoJogo();
-}
+  if (modo === "online" && estadoServidor) {
+    onlineGame = true;
 
+    // estado inicial vindo do servidor
+    hands = estadoServidor.hands;
+    trunfo = estadoServidor.trunfo;
+    jogadorComTrunfo = estadoServidor.jogadorComTrunfo;
+    currentTurn = estadoServidor.currentTurn;
+    baralhadorAtual = estadoServidor.baralhadorAtual;
+    lixoEquipa1 = [];
+    lixoEquipa2 = [];
+    cardsOnTable = [];
+
+    renderHands();
+    atualizarTrunfoLabel();
+  } else {
+    onlineGame = false;
+    baralhadorAtual = baralhador; // guarda o escolhido no menu
+    iniciarNovoJogo();
+  }
+}
 
 // ---------- eventos ----------
 document.getElementById("btn-novo-jogo").onclick = iniciarNovoJogo;
