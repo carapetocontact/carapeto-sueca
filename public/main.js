@@ -238,9 +238,13 @@ function resolveRound() {
 // ---------- atualizar painel e pontos ----------
 function updatePanel() {
   rondaInfo.textContent = `Ronda ${Math.min(rondaAtual, 10)} / 10`;
-  turnoInfo.textContent = tiposJogador[currentTurn] === "humano" ?
-      "É a tua vez de jogar!" :
-      `O computador (J${currentTurn+1}) está a jogar...`;
+  if (tiposJogador[currentTurn] === "humano") {
+      turnoInfo.textContent = (currentTurn === meuIndex) ?
+          "É a tua vez de jogar!" :
+          `É a vez de J${currentTurn+1} jogar`;
+  } else {
+      turnoInfo.textContent = `O computador (J${currentTurn+1}) está a jogar...`;
+  }
 
   if (trunfo) {
     trunfoSlot.textContent = `${trunfo.valor}${trunfo.naipe}`;
@@ -249,6 +253,8 @@ function updatePanel() {
       trunfoSlot.classList.add("red");
     }
   }
+  
+
 
   atualizarTrunfoLabel();
 
@@ -326,7 +332,7 @@ function iniciarNovoJogo() {
   cardsOnTable = [];
   rondaAtual = 1;
 
-  currentTurn = (baralhadorAtual + 1) % 4;
+  currentTurn = (baralhadorAtual + 3) % 4; // jogador à direita do baralhador
   jogadorComTrunfo = baralhadorAtual;
   trunfo = deck[0];
 
