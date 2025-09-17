@@ -1,87 +1,63 @@
 document.addEventListener("DOMContentLoaded", () => {
-  const selectModo = document.getElementById("select-modo");
-  const playersContainer = document.getElementById("jogadores-box");
-  const btnStart = document.getElementById("btn-start-game");
+  // Botões de escolha de modo
+  const modoButtons = document.querySelectorAll("#modo-jogo button");
+  const configs = document.querySelectorAll(".config-modo");
 
-  // Inicializa seleção de jogadores
-  function renderPlayerSelectors() {
-    playersContainer.innerHTML = "";
-    for (let i = 0; i < 4; i++) {
-      const div = document.createElement("div");
-      div.className = "player-select";
+  // DIVs do jogo e menu
+  const menuInicial = document.getElementById("menu-inicial");
+  const gameDiv = document.getElementById("game");
 
-      const label = document.createElement("label");
-      label.textContent = `Jogador ${i+1}: `;
+  // Elementos singleplayer
+  const btnStartSingle = document.getElementById("btn-start-single");
+  const selectBaralhadorSingle = document.getElementById("select-baralhador-single");
 
-      const select = document.createElement("select");
-      select.id = `select-jogador-${i}`;
-      const optionHumano = document.createElement("option");
-      optionHumano.value = "humano";
-      optionHumano.textContent = "Humano";
-      const optionPC = document.createElement("option");
-      optionPC.value = "computador";
-      optionPC.textContent = "Computador";
+  // Elementos local
+  const btnStartLocal = document.getElementById("btn-start-local");
+  const selectLocalPlayers = document.getElementById("select-local-players");
 
-      select.appendChild(optionHumano);
-      select.appendChild(optionPC);
+  // Elementos programador
+  const btnStartDev = document.getElementById("btn-start-dev");
 
-      div.appendChild(label);
-      div.appendChild(select);
-      playersContainer.appendChild(div);
-    }
-  }
-
-  // Mostra/esconde seleção de jogadores dependendo do modo
-  selectModo.addEventListener("change", () => {
-    const modo = selectModo.value;
-    if (modo === "single") {
-      // Só 1 humano
-      playersContainer.style.display = "block";
-      for (let i = 0; i < 4; i++) {
-        const select = document.getElementById(`select-jogador-${i}`);
-        select.value = i === 0 ? "humano" : "computador";
-        select.disabled = i !== 0;
-      }
-    } else if (modo === "multi") {
-      playersContainer.style.display = "block";
-      for (let i = 0; i < 4; i++) {
-        const select = document.getElementById(`select-jogador-${i}`);
-        select.disabled = false;
-        select.value = "humano"; // padrão
-      }
-    } else {
-      playersContainer.style.display = "none";
-    }
+  // Botões de modo
+  modoButtons.forEach(btn => {
+    btn.addEventListener("click", () => {
+      const modo = btn.dataset.modo;
+      configs.forEach(c => c.style.display = "none"); // esconde todas configs
+      // Mostra config correspondente
+      if (modo === "single") document.getElementById("config-single").style.display = "block";
+      else if (modo === "online") document.getElementById("config-online").style.display = "block";
+      else if (modo === "local") document.getElementById("config-local").style.display = "block";
+      else if (modo === "programador") document.getElementById("config-programador").style.display = "block";
+    });
   });
 
-  // Inicializa os selects
-  renderPlayerSelectors();
+  // Iniciar Singleplayer
+  btnStartSingle.addEventListener("click", () => {
+    const baralhador = Number(selectBaralhadorSingle.value);
+    const tipos = ["humano", "computador", "computador", "computador"];
+    iniciarJogo("single", tipos, baralhador);
+  });
 
-  // Ao clicar em "Iniciar Jogo"
-  btnStart.addEventListener("click", () => {
-    const modo = selectModo.value;
-    const baralhador = Number(document.getElementById("select-baralhador-menu").value);
-
-    // Ler tipos de jogador
+  // Iniciar Multiplayer Local
+  btnStartLocal.addEventListener("click", () => {
+    const numPlayers = Number(selectLocalPlayers.value);
     const tipos = [];
-    if (modo === "single") {
-        tipos.push("humano");          // jogador 1 é humano
-        tipos.push("computador");      // jogador 2 é computador
-        tipos.push("computador");      // jogador 3 é computador
-        tipos.push("computador");      // jogador 4 é computador
-    } else {
-        for (let i = 0; i < 4; i++) {
-            const sel = document.getElementById(`select-jogador-${i}`);
-            tipos.push(sel.value);
-        }
+    for (let i = 0; i < 4; i++) {
+      tipos.push(i < numPlayers ? "humano" : "computador");
     }
-
-    
-    // Esconde menu e mostra jogo
-    document.getElementById("menu-inicial").style.display = "none";
-    document.getElementById("game").style.display = "block";
-
-    // Chama função do main.js
-    startGame(modo, tipos, baralhador);
+    iniciarJogo("local", tipos, 0); // 0 = baralhador padrão
   });
+
+  // Iniciar Modo Programador
+  btnStartDev.addEventListener("click", () => {
+    const tipos = ["computador","computador","computador","computador"];
+    iniciarJogo("programador", tipos, 0);
+  });
+
+  // Função comum para iniciar o jogo
+  function iniciarJogo(modo, tipos, baralhador) {
+    menuInicial.style.display = "none";
+    gameDiv.style.display = "block";
+    startGame(modo, tipos, baralhador); // função do main.js
+  }
 });

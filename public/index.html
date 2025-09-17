@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Sueca Online - Multiplayer Test</title>
+<title>Sueca - Menu Atualizado</title>
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -12,42 +12,54 @@
   <div id="menu-inicial">
     <h1>Sueca</h1>
 
-    <!-- Inputs multiplayer -->
-    <div id="multiplayer-setup">
-      <label for="nome-jogador">Nome:</label>
-      <input type="text" id="nome-jogador" placeholder="Teu nome">
-      <label for="sala-id">ID da Sala:</label>
-      <input type="text" id="sala-id" placeholder="ex: sala1">
-      <button id="btn-entrar-sala">Entrar na Sala</button>
-      <button id="btn-pronto" disabled>Pronto</button> <!-- botão novo -->
-      <div id="lista-jogadores"></div>
+    <!-- Escolha do modo -->
+    <div id="modo-jogo">
+      <button data-modo="single">Singleplayer</button>
+      <button data-modo="online">Online</button>
+      <button data-modo="local">Multiplayer Local</button>
+      <button data-modo="programador">Programador</button>
     </div>
 
-    <!-- Seleção do modo de jogo -->
-    <div>
-      <label for="select-modo">Modo de Jogo:</label>
-      <select id="select-modo">
-        <option value="single">1 Jogador</option>
-        <option value="multi">Multiplayer</option>
-        <option value="programador">Programador</option>
-      </select>
-    </div>
-
-    <!-- Seletor de baralhador -->
-    <div>
-      <label for="select-baralhador-menu">Quem dá as cartas:</label>
-      <select id="select-baralhador-menu">
+    <!-- Configurações específicas de cada modo -->
+    <!-- Singleplayer -->
+    <div id="config-single" class="config-modo" style="display:none;">
+      <label for="select-baralhador-single">Quem dá as cartas:</label>
+      <select id="select-baralhador-single">
         <option value="0">Jogador 1</option>
         <option value="1">Jogador 2</option>
         <option value="2">Jogador 3</option>
         <option value="3">Jogador 4</option>
       </select>
+      <button id="btn-start-single">Iniciar Singleplayer</button>
     </div>
 
-    <!-- Seleção de jogadores humanos/computador -->
-    <div id="jogadores-box" style="display:none; margin-top: 10px;"></div>
+    <!-- Online -->
+    <div id="config-online" class="config-modo" style="display:none;">
+      <label for="nome-jogador">Nome:</label>
+      <input type="text" id="nome-jogador" placeholder="Teu nome">
+      <label for="sala-id">ID da Sala:</label>
+      <input type="text" id="sala-id" placeholder="ex: sala1">
+      <button id="btn-entrar-sala">Entrar na Sala</button>
+      <button id="btn-pronto" disabled>Pronto</button>
+      <div id="lista-jogadores"></div>
+    </div>
 
-    <button id="btn-start-game">Iniciar Jogo</button>
+    <!-- Multiplayer Local -->
+    <div id="config-local" class="config-modo" style="display:none;">
+      <label>Número de jogadores locais:</label>
+      <select id="select-local-players">
+        <option value="2">2</option>
+        <option value="3">3</option>
+        <option value="4">4</option>
+      </select>
+      <button id="btn-start-local">Iniciar Multiplayer Local</button>
+    </div>
+
+    <!-- Programador -->
+    <div id="config-programador" class="config-modo" style="display:none;">
+      <button id="btn-start-dev">Iniciar Modo Programador</button>
+    </div>
+
   </div>
 
   <!-- ===== JOGO (escondido no início) ===== -->
