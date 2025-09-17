@@ -32,14 +32,27 @@ io.on("connection", (socket) => {
       return;
     }
 
-    sala.players.push({ id: socket.id, nome });
+    sala.players.push({ id: socket.id, nome, pronto: false });
     socket.join(salaId);
 
     console.log(`${nome} entrou na sala ${salaId}`);
     io.to(salaId).emit("atualizar-jogadores", sala.players);
+  });
 
-    // Se sala completa, inicia o jogo
-    if (sala.players.length === 4) {
+  // Jogador sinaliza que está pronto
+  socket.on("pronto", ({ salaId }) => {
+    const sala = salas[salaId];
+    if (!sala) return;
+
+    const player = sala.players.find(p => p.id === socket.id);
+    if (player) player.pronto = true;
+
+    io.to(salaId).emit("atualizar-jogadores", sala.players);
+
+    // Inicia o jogo se todos estiverem prontos
+    const todosProntos = sala.players.length > 0 && sala.players.every(p => p.pronto);
+    if (todosProntos) {
+      sala.estadoDoJogo = { turno: 0 }; // exemplo de estado inicial
       io.to(salaId).emit("iniciar-jogo", sala.players.map(p => p.nome));
     }
   });
@@ -51,6 +64,16 @@ io.on("connection", (socket) => {
 
     // Enviar jogada a todos os clientes na sala
     io.to(salaId).emit("atualizar-jogada", { jogadorIndex, carta });
+  });
+
+  // Iniciar jogo manualmente (caso queira botão no cliente)
+  socket.on("iniciar-jogo-manual", ({ salaId }) => {
+    const sala = salas[salaId];
+    if (!sala || sala.players.length === 0) return;
+
+    sala.players.forEach(p => p.pronto = true);
+    sala.estadoDoJogo = { turno: 0 };
+    io.to(salaId).emit("iniciar-jogo", sala.players.map(p => p.nome));
   });
 
   // Desconexão
