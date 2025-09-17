@@ -15,16 +15,12 @@ const PORT = process.env.PORT || 3000;
 // Estrutura de salas de jogo
 let salas = {}; // { salaId: { players: [], estadoDoJogo: {...} } }
 
-// Quando um cliente se conecta
 io.on("connection", (socket) => {
   console.log(`Cliente conectado: ${socket.id}`);
 
   // Criar ou entrar numa sala
   socket.on("entrar-sala", ({ salaId, nome }) => {
-    if (!salas[salaId]) {
-      salas[salaId] = { players: [], estadoDoJogo: {} };
-    }
-
+    if (!salas[salaId]) salas[salaId] = { players: [], estadoDoJogo: {} };
     const sala = salas[salaId];
 
     if (sala.players.length >= 4) {
@@ -32,10 +28,12 @@ io.on("connection", (socket) => {
       return;
     }
 
-    sala.players.push({ id: socket.id, nome, pronto: false });
+    // Atribui índice de jogador (0 a 3)
+    const jogadorIndex = sala.players.length;
+    sala.players.push({ id: socket.id, nome, pronto: false, index: jogadorIndex });
     socket.join(salaId);
 
-    console.log(`${nome} entrou na sala ${salaId}`);
+    console.log(`${nome} entrou na sala ${salaId} (J${jogadorIndex + 1})`);
     io.to(salaId).emit("atualizar-jogadores", sala.players);
   });
 
@@ -49,10 +47,9 @@ io.on("connection", (socket) => {
 
     io.to(salaId).emit("atualizar-jogadores", sala.players);
 
-    // Inicia o jogo se todos estiverem prontos
-    const todosProntos = sala.players.length > 0 && sala.players.every(p => p.pronto);
-    if (todosProntos) {
-      sala.estadoDoJogo = { turno: 0 }; // exemplo de estado inicial
+    // Inicia o jogo se todos estiverem prontos e pelo menos 2 jogadores
+    if (sala.players.length >= 2 && sala.players.every(p => p.pronto)) {
+      sala.estadoDoJogo = { turno: 0 };
       io.to(salaId).emit("iniciar-jogo", sala.players.map(p => p.nome));
     }
   });
@@ -62,18 +59,7 @@ io.on("connection", (socket) => {
     const sala = salas[salaId];
     if (!sala) return;
 
-    // Enviar jogada a todos os clientes na sala
     io.to(salaId).emit("atualizar-jogada", { jogadorIndex, carta });
-  });
-
-  // Iniciar jogo manualmente (caso queira botão no cliente)
-  socket.on("iniciar-jogo-manual", ({ salaId }) => {
-    const sala = salas[salaId];
-    if (!sala || sala.players.length === 0) return;
-
-    sala.players.forEach(p => p.pronto = true);
-    sala.estadoDoJogo = { turno: 0 };
-    io.to(salaId).emit("iniciar-jogo", sala.players.map(p => p.nome));
   });
 
   // Desconexão
@@ -88,7 +74,6 @@ io.on("connection", (socket) => {
   });
 });
 
-// Inicia servidor
 server.listen(PORT, () => {
   console.log(`Servidor rodando em http://localhost:${PORT}`);
 });
