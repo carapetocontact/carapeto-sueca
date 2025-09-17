@@ -11,7 +11,7 @@ const listaJogadores = document.getElementById("lista-jogadores");
 // Variáveis
 let minhaSala = "";
 let meuNome = "";
-let meuIndex = null; // slot do jogador (0 a 3)
+meuIndex = null; // slot do jogador (0 a 3)
 
 // Entrar na sala
 btnEntrarSala.onclick = () => {
@@ -89,3 +89,4 @@ attemptPlayCard = function(playerIndex, cardIndex) {
   }
   attemptPlayCardOriginal(playerIndex, cardIndex);
 };
+
