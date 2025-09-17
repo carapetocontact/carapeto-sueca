@@ -3,6 +3,7 @@ const socket = io(); // conecta automaticamente ao servidor
 
 // DOM
 const btnEntrarSala = document.getElementById("btn-entrar-sala");
+const btnPronto = document.getElementById("btn-pronto"); // botão novo
 const nomeInput = document.getElementById("nome-jogador");
 const salaInput = document.getElementById("sala-id");
 const listaJogadores = document.getElementById("lista-jogadores");
@@ -21,8 +22,8 @@ btnEntrarSala.onclick = () => {
     return;
   }
 
-  // envia evento para servidor
-  socket.emit("entrarSala", { nome: meuNome, sala: minhaSala });
+  // envia evento para servidor (novo nome de evento compatível)
+  socket.emit("entrar-sala", { nome: meuNome, salaId: minhaSala });
 
   // Desativa inputs para evitar mudanças
   nomeInput.disabled = true;
@@ -30,26 +31,26 @@ btnEntrarSala.onclick = () => {
   btnEntrarSala.disabled = true;
 
   listaJogadores.innerHTML = "Aguardando outros jogadores...";
+  btnPronto.disabled = false; // habilita botão pronto
 };
 
 // ================= EVENTOS RECEBIDOS =================
 
 // Atualiza lista de jogadores na sala
-socket.on("atualizarJogadores", (jogadores) => {
+socket.on("atualizar-jogadores", (jogadores) => {
   listaJogadores.innerHTML = "<strong>Jogadores na sala:</strong><br>" +
-    jogadores.map(j => j.nome).join("<br>");
+    jogadores.map(j => `${j.nome} ${j.pronto ? "(pronto)" : ""}`).join("<br>");
 });
 
 // Quando todos os jogadores estão prontos, começar jogo
-socket.on("iniciarJogo", (data) => {
-  alert(`Todos jogadores entraram! O jogo vai começar.`);
-  // Aqui podemos iniciar o startGame do main.js
-  // startGame(data.modo, data.tipos, data.baralhador);
+socket.on("iniciar-jogo", (nomesJogadores) => {
+  alert(`O jogo vai começar com: ${nomesJogadores.join(", ")}`);
+  btnPronto.disabled = true;
 });
 
 // Recebe jogada de outro jogador
-socket.on("jogada", ({ jogador, cartaIndex }) => {
-  console.log(`Recebido jogada do jogador ${jogador + 1}: carta ${cartaIndex}`);
+socket.on("atualizar-jogada", ({ jogadorIndex, carta }) => {
+  console.log(`Recebido jogada do jogador ${jogadorIndex + 1}: carta ${carta}`);
   // Aqui podemos chamar attemptPlayCard se for multiplayer
 });
 
@@ -57,5 +58,13 @@ socket.on("jogada", ({ jogador, cartaIndex }) => {
 
 // Função para enviar a jogada
 function enviarJogada(playerIndex, cardIndex) {
-  socket.emit("jogada", { sala: minhaSala, jogador: playerIndex, cartaIndex });
+  socket.emit("jogada", { salaId: minhaSala, jogadorIndex: playerIndex, carta: cardIndex });
 }
+
+// ================= NOVO =================
+
+// Sinalizar que estou pronto
+btnPronto.onclick = () => {
+  socket.emit("pronto", { salaId: minhaSala });
+  btnPronto.disabled = true; // desativa botão após sinalizar pronto
+};
