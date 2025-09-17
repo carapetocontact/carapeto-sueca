@@ -18,6 +18,8 @@ let tiposJogador = ["humano", "humano", "humano", "humano"];
 let jogadorHumano = null;
 let jogadoresComputador = [];
 let onlineGame = false; // 🚀 novo: distingue modo online
+let meuIndex = null; // índice do jogador local
+
 
 // DOM
 const pontos1El = document.getElementById("pontos1");
@@ -66,45 +68,58 @@ function atualizarTrunfoLabel() {
 
 // ---------- render mãos ----------
 function renderHands() {
+  const maosContainer = document.getElementById('maos');
+  maosContainer.style.flexDirection = 'row';
+
   for (let p = 0; p < 4; p++) {
     const container = document.getElementById(playerIds[p]);
-    container.innerHTML = `<strong>J${p + 1}</strong>`;
 
-    const leadingSuit = cardsOnTable.length > 0 ? cardsOnTable[0].card.naipe : null;
-    const hasSuit = leadingSuit ? hands[p].some(c => c.naipe === leadingSuit) : false;
+    // Força horizontal
+    container.style.display = "flex";
+    container.style.flexDirection = "row";
+    container.style.flexWrap = "wrap";
 
-    for (let i = 0; i < hands[p].length; i++) {
-      const c = hands[p][i];
-      const d = document.createElement("div");
-      d.className = "carta";
+    // Mostrar apenas a mão do jogador local
+    if (p === meuIndex) {
+      container.style.display = "flex";  // mostrar
+      container.innerHTML = `<strong>J${p + 1}</strong>`;
 
-      // Mostrar verso para todos os jogadores que não são o local
-      if (p !== meuIndex) {
-        d.classList.add("carta-costa");
-      } else {
+      const leadingSuit = cardsOnTable.length > 0 ? cardsOnTable[0].card.naipe : null;
+      const hasSuit = leadingSuit ? hands[p].some(c => c.naipe === leadingSuit) : false;
+
+      for (let i = 0; i < hands[p].length; i++) {
+        const c = hands[p][i];
+        const d = document.createElement("div");
+        d.className = "carta";
         d.textContent = `${c.valor}${c.naipe}`;
         if (["♥","♦"].includes(c.naipe)) d.classList.add("red");
-      }
 
-      // Só jogador local pode clicar, e apenas na sua vez
-      let canClick = tiposJogador[p] === "humano" && p === currentTurn && p === meuIndex;
-
-      if (canClick) {
-        if (!leadingSuit || c.naipe === leadingSuit || !hasSuit) {
-          d.onclick = () => attemptPlayCard(p, i);
-          d.classList.remove("disabled");
+        let canClick = tiposJogador[p] === "humano" && p === currentTurn;
+        if (canClick) {
+          if (!leadingSuit || c.naipe === leadingSuit || !hasSuit) {
+            d.onclick = () => attemptPlayCard(p, i);
+            d.classList.remove("disabled");
+          } else {
+            d.classList.add("disabled");
+          }
         } else {
           d.classList.add("disabled");
         }
-      } else {
-        d.classList.add("disabled");
-      }
 
-      container.appendChild(d);
+        container.appendChild(d);
+      }
+    } else {
+      container.style.display = "none"; // esconder os outros
     }
   }
+
   updatePanel();
 }
+
+
+
+
+
 
 
 
@@ -300,8 +315,12 @@ function finalizarJogo() {
   };
 }
 
+
 // ---------- iniciar novo jogo ----------
 function iniciarNovoJogo() {
+  // Define índice do jogador local se singleplayer
+  if (modoJogo === "singleplayer") meuIndex = 0;
+
   const deck = embaralhar(criarBaralho());
 
   hands = [[], [], [], []];
@@ -318,6 +337,9 @@ function iniciarNovoJogo() {
     hands[i] = deck.slice(i * 10, (i + 1) * 10);
   }
 
+  // 🚀 Certifica-se de que meuIndex está definido antes de renderizar
+  if (meuIndex === null) meuIndex = 0;
+
   renderHands();
   atualizarTrunfoLabel();
 
@@ -325,7 +347,6 @@ function iniciarNovoJogo() {
     setTimeout(() => jogadaComputador(currentTurn), 500);
   }
 
-  // 🚀 Passar o baralhador para o próximo jogo
   baralhadorAtual = (baralhadorAtual + 1) % 4;
 }
 
@@ -335,15 +356,20 @@ function startGame(modo, tipos, baralhador, estadoServidor = null) {
   tiposJogador = tipos;
   document.getElementById("game").style.display = "block";
 
+  if (modoJogo === "singleplayer") {
+    meuIndex = 0;
+    onlineGame = false;
+  } else if (modoJogo === "online") {
+    onlineGame = true;
+    // meuIndex será definido pelo servidor
+  }
+
   jogadorHumano = tiposJogador.indexOf("humano");
   jogadoresComputador = tiposJogador
     .map((t, i) => (t === "computador" ? i : -1))
     .filter(i => i !== -1);
 
   if (modo === "online" && estadoServidor) {
-    onlineGame = true;
-
-    // estado inicial vindo do servidor
     hands = estadoServidor.hands;
     trunfo = estadoServidor.trunfo;
     jogadorComTrunfo = estadoServidor.jogadorComTrunfo;
@@ -353,14 +379,22 @@ function startGame(modo, tipos, baralhador, estadoServidor = null) {
     lixoEquipa2 = [];
     cardsOnTable = [];
 
+    // 🚀 Se meuIndex não foi setado, pega do estado do servidor
+    if (meuIndex === null && estadoServidor.meuIndex !== undefined) {
+      meuIndex = estadoServidor.meuIndex;
+    }
+
     renderHands();
     atualizarTrunfoLabel();
   } else {
-    onlineGame = false;
-    baralhadorAtual = baralhador; // guarda o escolhido no menu
+    baralhadorAtual = baralhador;
     iniciarNovoJogo();
   }
 }
+
+
+
+
 
 // ---------- eventos ----------
 document.getElementById("btn-novo-jogo").onclick = iniciarNovoJogo;

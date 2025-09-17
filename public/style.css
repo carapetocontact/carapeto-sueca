@@ -248,15 +248,22 @@ h1 { margin: 10px 0; }
 }
 
 /* ==================== MÃOS ==================== */
-#maos { display: flex; flex-direction: column; gap: 0.5em; }
+
+#maos { 
+  display: flex; 
+  flex-direction: row; /* linha em vez de coluna */
+  gap: 0.5em; 
+  flex-wrap: wrap;    /* opcional: permite quebra em telas pequenas */
+  justify-content: center; /* centraliza as mãos */
+}
+
 .mao {
-  background: rgba(0,0,0,0.2);
-  padding: 0.5em;
-  border-radius: 8px;
   display: flex;
   justify-content: center;
-  flex-wrap: wrap;
+  flex-wrap: nowrap; /* <--- mudar de wrap para nowrap */
+  gap: 2px;          /* espaço entre cartas */
 }
+
 .active .carta { box-shadow: 0 0 15px 3px yellow; }
 
 /* ==================== LIXOS ==================== */
