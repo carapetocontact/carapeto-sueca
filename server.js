@@ -6,21 +6,19 @@ const app = express();
 const server = http.createServer(app);
 const io = new Server(server);
 
-// Serve arquivos estáticos
 app.use(express.static("public"));
 
-// Porta
 const PORT = process.env.PORT || 3000;
 
-// Estrutura de salas de jogo
+// Estrutura de salas
 let salas = {}; // { salaId: { players: [], estadoDoJogo: {...} } }
 
 io.on("connection", (socket) => {
   console.log(`Cliente conectado: ${socket.id}`);
 
-  // Criar ou entrar numa sala
+  // Entrar ou criar sala
   socket.on("entrar-sala", ({ salaId, nome }) => {
-    if (!salas[salaId]) salas[salaId] = { players: [], estadoDoJogo: {} };
+    if (!salas[salaId]) salas[salaId] = { players: [], estadoDoJogo: null };
     const sala = salas[salaId];
 
     if (sala.players.length >= 4) {
@@ -28,16 +26,15 @@ io.on("connection", (socket) => {
       return;
     }
 
-    // Atribui índice de jogador (0 a 3)
     const jogadorIndex = sala.players.length;
     sala.players.push({ id: socket.id, nome, pronto: false, index: jogadorIndex });
     socket.join(salaId);
 
-    console.log(`${nome} entrou na sala ${salaId} (J${jogadorIndex + 1})`);
+    console.log(`${nome} entrou na sala ${salaId} (J${jogadorIndex+1})`);
     io.to(salaId).emit("atualizar-jogadores", sala.players);
   });
 
-  // Jogador sinaliza que está pronto
+  // Jogador pronto
   socket.on("pronto", ({ salaId }) => {
     const sala = salas[salaId];
     if (!sala) return;
@@ -47,17 +44,33 @@ io.on("connection", (socket) => {
 
     io.to(salaId).emit("atualizar-jogadores", sala.players);
 
-    // Inicia o jogo se todos estiverem prontos e pelo menos 2 jogadores
+    // Se todos prontos e pelo menos 2 jogadores
     if (sala.players.length >= 2 && sala.players.every(p => p.pronto)) {
-      sala.estadoDoJogo = { turno: 0 };
-      io.to(salaId).emit("iniciar-jogo", sala.players.map(p => p.nome));
+      // Inicializa estado do jogo
+      const deck = criarDeckEmbaralhado();
+      const hands = [[], [], [], []];
+      for (let i = 0; i < 4; i++) hands[i] = deck.slice(i*10,(i+1)*10);
+
+      sala.estadoDoJogo = {
+        hands,
+        trunfo: deck[0],
+        jogadorComTrunfo: 0,
+        currentTurn: 1,
+        baralhadorAtual: 0,
+      };
+
+      io.to(salaId).emit(
+        "iniciar-jogo",
+        sala.players.map(p => p.nome),
+        sala.estadoDoJogo
+      );
     }
   });
 
-  // Receber jogada de um jogador
+  // Receber jogada
   socket.on("jogada", ({ salaId, jogadorIndex, carta }) => {
     const sala = salas[salaId];
-    if (!sala) return;
+    if (!sala || !sala.estadoDoJogo) return;
 
     io.to(salaId).emit("atualizar-jogada", { jogadorIndex, carta });
   });
@@ -74,6 +87,17 @@ io.on("connection", (socket) => {
   });
 });
 
-server.listen(PORT, () => {
-  console.log(`Servidor rodando em http://localhost:${PORT}`);
-});
+// ---------- utilitário de deck ----------
+function criarDeckEmbaralhado() {
+  const naipes = ["♠","♥","♦","♣"];
+  const valores = ["A","7","K","J","Q","6","5","4","3","2"];
+  const deck = [];
+  for (const n of naipes) for (const v of valores) deck.push({ valor: v, naipe: n });
+  for (let i = deck.length-1;i>0;i--){
+    const j = Math.floor(Math.random()*(i+1));
+    [deck[i],deck[j]] = [deck[j],deck[i]];
+  }
+  return deck;
+}
+
+server.listen(PORT, () => console.log(`Servidor rodando em http://localhost:${PORT}`));
