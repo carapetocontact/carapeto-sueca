@@ -1,0 +1,407 @@
+/* ==================== BOX-SIZING GLOBAL ==================== */
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
+/* ==================== VARIÁVEIS ==================== */
+:root {
+  --bg-body: grey;
+  --color-text: #fff;
+  --color-panel: #1a472a;
+  --color-panel-highlight: #016646;
+  --color-mesa: #0a540e;
+  --color-slot-base: #222;
+  --color-slot-border: black;
+  --color-carta-bg: #fff;
+  --color-carta-border: black;
+  --color-hover: rgba(0,0,0,0.3);
+  --color-trunfo-bg: rgba(0,0,0,0.5);
+  --color-button-bg: #1b5e20;
+  --color-button-hover: #2e7d32;
+
+  /* tamanhos fluidos */
+  --carta-width: clamp(35px, 5vw, 50px);
+  --carta-height: clamp(50px, 7vw, 75px);
+  --slot-width: var(--carta-width);
+  --slot-height: var(--carta-height);
+  --mesa-max: 500px;
+  --gap-main: clamp(10px, 2vw, 20px);
+}
+
+/* ==================== BASE ==================== */
+body {
+  font-family: 'Segoe UI', sans-serif;
+  background: var(--bg-body);
+  color: var(--color-text);
+  margin: 0;
+  padding: 0;
+  text-align: center;
+}
+
+h1 { margin: 10px 0; }
+
+/* ==================== LAYOUT CENTRAL ==================== */
+.main-layout {
+  display: flex;
+  flex-direction: column;
+  gap: var(--gap-main);
+  padding: 0;
+  max-width: 1200px;  /* limita largura máxima */
+  margin: 0 auto;     /* centraliza na tela */
+}
+
+/* ==================== CONTAINER DO JOGO ==================== */
+#game-container {
+  display: flex;
+  gap: var(--gap-main);
+  justify-content: flex-start;
+  align-items: flex-start;
+  flex-wrap: wrap;
+}
+
+/* Painéis laterais */
+#left-panel,
+#right-panel {
+  flex: 1;
+  min-width: 250px;
+  background: var(--color-panel);
+  border-radius: 15px;
+  padding: 1em;
+}
+
+/* Painel direito com coluna interna */
+#right-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 1em;
+}
+
+/* Painel inferior */
+#bottom-panel {
+  background: var(--color-panel);
+  border-radius: 15px;
+  padding: 1em;
+  width: 100%;
+}
+
+/* Painel de informações */
+#painel {
+  display: flex;
+  flex-wrap: wrap;               /* permite que elementos quebrem linha em telas pequenas */
+  justify-content: space-around; /* distribui igualmente */
+  align-items: center;           /* centraliza verticalmente */
+  background: var(--color-panel-highlight);
+  padding: 0.5em 1em;
+  border-radius: 10px;
+  width: 100%;
+  gap: 1em;                      /* espaço entre elementos */
+  margin-bottom: var(--gap-main);/* cria distância abaixo do painel */
+  box-sizing: border-box;        /* inclui padding dentro da largura */
+}
+
+#painel div {
+  font-size: clamp(0.8rem, 1vw, 1rem);
+  font-weight: bold;
+  flex: 1 1 auto;                /* permite que cada item cresça/reduza proporcionalmente */
+  text-align: center;             /* centraliza o conteúdo de cada div */
+}
+
+
+/* ==================== MESA CENTRAL ==================== */
+#mesa-central {
+  width: 100%;
+  max-width: var(--mesa-max);
+  aspect-ratio: 1;
+  margin: 0 auto;
+  background: var(--color-mesa);
+  border: 4px solid var(--color-slot-border);
+  border-radius: 50%;
+  position: relative;
+}
+
+/* Slots base */
+.mesa-slot-base {
+  position: absolute;
+  width: var(--slot-width);
+  height: var(--slot-height);
+  background: var(--color-slot-base);
+  color: var(--color-text);
+  border: 2px solid var(--color-slot-border);
+  border-radius: 50%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-weight: bold;
+  font-size: clamp(0.5rem, 1vw, 0.8rem);
+  z-index: 1;
+}
+
+/* Posicionamento slots base */
+#slot-base-j1 { bottom: 10%; left: 50%; transform: translateX(-50%); }
+#slot-base-j2 { right: 10%; top: 50%; transform: translateY(-50%); }
+#slot-base-j3 { top: 10%; left: 50%; transform: translateX(-50%); }
+#slot-base-j4 { left: 10%; top: 50%; transform: translateY(-50%); }
+
+/* Slots para cartas */
+.mesa-slot {
+  position: absolute;
+  width: var(--slot-width);
+  height: var(--slot-height);
+  border: 2px solid rgba(255,255,255,0.3);
+  border-radius: 6px;
+  background: rgba(255,255,255,0.1);
+  z-index: 2;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+/* Posicionamento slots de cartas */
+#slot-j1 { bottom: 20%; left: 50%; transform: translateX(-50%); }
+#slot-j2 { right: 20%; top: 50%; transform: translateY(-50%); }
+#slot-j3 { top: 20%; left: 50%; transform: translateX(-50%); }
+#slot-j4 { left: 20%; top: 50%; transform: translateY(-50%); }
+
+/* Cartas jogadas */
+.carta-jogada {
+  position: relative;
+  width: var(--carta-width);
+  height: var(--carta-height);
+  border: 2px solid var(--color-slot-border);
+  border-radius: 6px;
+  background: var(--color-carta-bg);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 3;
+  margin: 0;
+}
+
+/* ==================== CARTAS ==================== */
+.carta {
+  width: var(--carta-width);
+  height: var(--carta-height);
+  border: 2px solid var(--color-carta-border);
+  border-radius: 6px;
+  background: var(--color-carta-bg);
+  color: #000;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-weight: bold;
+  font-size: clamp(0.7rem, 1vw, 1rem);
+  cursor: pointer;
+  user-select: none;
+  margin: 2px;
+  transition: transform 0.3s, opacity 0.3s, box-shadow 0.3s;
+}
+
+.carta.red { color: red; }
+.carta:hover { transform: translateY(-5px); box-shadow: 0 5px 15px var(--color-hover); }
+.carta.disabled { opacity: 0.4; cursor: not-allowed; }
+.carta.disabled:hover { transform: none; box-shadow: 0 0 5px red; }
+
+.carta-costa {
+  width: var(--carta-width);
+  height: calc(var(--carta-height) + 5px);
+  background: repeating-linear-gradient(
+    45deg,
+    #8a1e1e,
+    #8a1e1e 10px,
+    #f63b3b 10px,
+    #f63b3b 20px
+  );
+  border: 1px solid var(--color-carta-border);
+  border-radius: 5px;
+}
+
+/* ==================== TRUNFO ==================== */
+#trunfo-label {
+  position: absolute;
+  top: 0px;
+  right: 5px;
+  background: var(--color-trunfo-bg);
+  color: var(--color-text);
+  font-size: clamp(0.7rem, 1vw, 1rem);
+  font-weight: bold;
+  padding: 0.2em 0.5em;
+  border-radius: 6px 6px 0 0;
+  z-index: 21;
+}
+
+#trunfo-slot {
+  position: absolute;
+  top: 25px;
+  right: 5px;
+  width: var(--carta-width);
+  height: var(--carta-height);
+  border: 2px solid var(--color-carta-border);
+  border-radius: 6px;
+  background: var(--color-carta-bg);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-weight: bold;
+  font-size: clamp(0.7rem, 1vw, 1rem);
+  box-shadow: 0 2px 6px rgba(0,0,0,0.5);
+  z-index: 20;
+}
+
+/* ==================== MÃOS ==================== */
+#maos { display: flex; flex-direction: column; gap: 0.5em; }
+.mao {
+  background: rgba(0,0,0,0.2);
+  padding: 0.5em;
+  border-radius: 8px;
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+.active .carta { box-shadow: 0 0 15px 3px yellow; }
+
+/* ==================== LIXOS ==================== */
+#lixos {
+  display: flex;
+  justify-content: space-around;
+  margin-top: 20px;
+}
+.lixo-equipa { width: 40%; }
+#lixo1-cartas, #lixo2-cartas {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(30px, 1fr));
+  gap: 5px;
+  justify-items: center;
+  margin-top: 5px;
+}
+
+/* ==================== CONTROLES ==================== */
+button, select {
+  padding: 0.4em 0.8em;
+  margin: 0.3em;
+  border-radius: 5px;
+  border: none;
+  font-weight: bold;
+  cursor: pointer;
+}
+button:hover { background: var(--color-button-bg); color: #fff; }
+
+/* ==================== ROUND WINNER ==================== */
+#round-winner {
+  display: none;
+  position: absolute;
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  background: rgba(0,0,0,0.85);
+  color: white;
+  padding: 1em 2em;
+  border-radius: 12px;
+  text-align: center;
+  z-index: 1000;
+  box-shadow: 0 0 20px rgba(0,0,0,0.7);
+  animation: fadeIn 0.5s ease-out;
+}
+
+#round-winner-msg { font-size: clamp(1.2rem, 2vw, 1.5rem); font-weight: bold; margin-bottom: 1em; }
+
+#round-winner-card .carta {
+  width: calc(var(--carta-width) * 1.4);
+  height: calc(var(--carta-height) * 1.4);
+  font-size: clamp(1rem, 1.5vw, 1.2rem);
+  box-shadow: 0 5px 15px rgba(0,0,0,0.6);
+  transform: rotate(-3deg);
+  transition: transform 0.3s ease;
+}
+#round-winner-card .carta:hover { transform: rotate(0deg) scale(1.05); }
+
+#round-winner-btn {
+  margin-top: 1em;
+  padding: 0.5em 1em;
+  border: none;
+  border-radius: 6px;
+  font-weight: bold;
+  cursor: pointer;
+  background: var(--color-button-bg);
+  color: white;
+  transition: background 0.3s;
+}
+#round-winner-btn:hover { background: var(--color-button-hover); }
+
+/* ==================== MODAL FIM DE JOGO ==================== */
+.modal {
+  position: fixed;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  background: rgba(0,0,0,0.6);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 999;
+}
+.modal.hidden { display: none; }
+.modal-content {
+  background: white;
+  color: black;
+  padding: 2em;
+  border-radius: 15px;
+  text-align: center;
+  box-shadow: 0 0 20px rgba(0,0,0,0.4);
+  animation: fadeIn 0.5s ease-in-out;
+}
+.modal-content h2 { font-size: clamp(1.5rem, 3vw, 2rem); margin-bottom: 0.5em; }
+.modal-content p { font-size: clamp(1rem, 2vw, 1.2rem); margin-bottom: 1em; }
+.fim-jogo-pontos { margin-bottom: 1em; font-weight: bold; }
+
+/* ==================== ANIMAÇÕES ==================== */
+@keyframes fadeIn { from { opacity: 0; transform: scale(0.8); } to { opacity: 1; transform: scale(1); } }
+
+/* ==================== RESPONSIVIDADE ==================== */
+@media (max-width: 768px) {
+
+  #painel {
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5em;
+  }
+
+  #game-container {
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5em;
+    padding: 0;
+  }
+
+  #left-panel, #right-panel, #bottom-panel {
+    width: 100%;
+    min-width: unset;
+    margin: 0 auto;
+  }
+
+  #mesa-central, #maos {
+    width: 100%;
+    max-width: 500px;
+    margin: 0 auto;
+  }
+}
+
+@media (max-width: 480px) {
+  #mesa-central, #maos { max-width: 460px; }
+  #left-panel, #right-panel, #bottom-panel { width: 100%; }
+
+  #trunfo-label {
+    top: 0px;
+    right: 0px;
+    font-size: clamp(0.5rem, 2vw, 0.9rem);
+    padding: 0.15em 0.4em;
+  }
+
+  #trunfo-slot {
+    top: 5px;
+    right: 3px;
+    font-size: clamp(0.7rem, 1.5vw, 1rem);
+  }
+}
+
+@media (max-width: 430px) {
+  #mesa-central, #maos { max-width: 400px; width: 100%; }
+  #left-panel, #right-panel, #bottom-panel { width: 100%; }
+}
