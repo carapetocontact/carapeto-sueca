@@ -260,9 +260,10 @@ h1 { margin: 10px 0; }
 .mao {
   display: flex;
   justify-content: center;
-  flex-wrap: nowrap; /* <--- mudar de wrap para nowrap */
-  gap: 2px;          /* espaço entre cartas */
+  flex-wrap: wrap;  /* agora permite quebra em telas pequenas */
+  gap: 2px;
 }
+
 
 .active .carta { box-shadow: 0 0 15px 3px yellow; }
 
@@ -396,7 +397,7 @@ button:hover { background: var(--color-button-bg); color: #fff; }
 
   #trunfo-label {
     top: 0px;
-    right: 0px;
+    right: 5px;
     font-size: clamp(0.5rem, 2vw, 0.9rem);
     padding: 0.15em 0.4em;
   }
@@ -412,3 +413,15 @@ button:hover { background: var(--color-button-bg); color: #fff; }
   #mesa-central, #maos { max-width: 400px; width: 100%; }
   #left-panel, #right-panel, #bottom-panel { width: 100%; }
 }
+
+@media (max-width: 480px) {
+  :root {
+    --carta-width: clamp(50px, 7.5vw, 70px);   /* ligeiro aumento */
+    --carta-height: clamp(75px, 11vw, 105px);  /* ligeiro aumento */
+    --slot-width: clamp(50px, 7.5vw, 70px);
+    --slot-height: clamp(75px, 11vw, 105px);
+  }
+}
+
+
+
