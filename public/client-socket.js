@@ -11,7 +11,8 @@ const listaJogadores = document.getElementById("lista-jogadores");
 // Variáveis
 let minhaSala = "";
 let meuNome = "";
-meuIndex = null; // slot do jogador (0 a 3)
+
+meuIndex = null; // slot do jogador (0 a 3) já let no main.js
 
 // Entrar na sala
 btnEntrarSala.onclick = () => {
@@ -38,11 +39,17 @@ btnEntrarSala.onclick = () => {
 // Atualiza lista de jogadores na sala
 socket.on("atualizar-jogadores", (jogadores) => {
   listaJogadores.innerHTML = "<strong>Jogadores na sala:</strong><br>" +
-    jogadores.map(j => `${j.nome} ${j.pronto ? "(pronto)" : ""}`).join("<br>");
+    jogadores.map(j => {
+      let tag = j.nome + (j.pronto ? " (pronto)" : "");
+      if (j.nome === meuNome) tag += " ← Tu (J" + (j.index + 1) + ")";
+      return tag;
+    }).join("<br>");
 
+  // Atualiza meuIndex
   const jogador = jogadores.find(j => j.nome === meuNome);
   if (jogador) meuIndex = jogador.index;
 });
+
 
 // Quando todos os jogadores estão prontos, iniciar jogo
 socket.on("iniciar-jogo", ({ nomesJogadores, hands: serverHands, trunfo: serverTrunfo, jogadorComTrunfo: serverTrunfoPlayer, turno }) => {
@@ -89,4 +96,3 @@ attemptPlayCard = function(playerIndex, cardIndex) {
   }
   attemptPlayCardOriginal(playerIndex, cardIndex);
 };
-

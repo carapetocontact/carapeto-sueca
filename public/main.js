@@ -68,22 +68,18 @@ function atualizarTrunfoLabel() {
 
 // ---------- render mãos ----------
 function renderHands() {
-  const maosContainer = document.getElementById('maos');
-  maosContainer.style.flexDirection = 'row';
+  document.getElementById('maos').style.flexDirection = 'row';
+  document.getElementById('maos').style.flexWrap = 'wrap';
 
   for (let p = 0; p < 4; p++) {
     const container = document.getElementById(playerIds[p]);
+    container.innerHTML = `<strong>J${p + 1}</strong>`;
 
-    // Força horizontal
-    container.style.display = "flex";
-    container.style.flexDirection = "row";
-    container.style.flexWrap = "wrap";
+    // Mostrar todas as mãos se local ou programador
+    const mostrarMao = (modoJogo === "local" || modoJogo === "programador") || (p === meuIndex);
 
-    // Mostrar apenas a mão do jogador local
-    if (p === meuIndex) {
+    if (mostrarMao) {
       container.style.display = "flex";  // mostrar
-      container.innerHTML = `<strong>J${p + 1}</strong>`;
-
       const leadingSuit = cardsOnTable.length > 0 ? cardsOnTable[0].card.naipe : null;
       const hasSuit = leadingSuit ? hands[p].some(c => c.naipe === leadingSuit) : false;
 
@@ -109,12 +105,13 @@ function renderHands() {
         container.appendChild(d);
       }
     } else {
-      container.style.display = "none"; // esconder os outros
+      container.style.display = "none"; // esconder nos outros casos
     }
   }
 
   updatePanel();
 }
+
 
 
 
