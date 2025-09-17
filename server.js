@@ -10,7 +10,21 @@ app.use(express.static("public"));
 
 const PORT = process.env.PORT || 3000;
 
-// Estrutura de salas
+// ====== Utilitárias do baralho ======
+const naipes = ["♠","♥","♦","♣"];
+const valores = ["A","7","K","J","Q","6","5","4","3","2"];
+
+function criarDeckEmbaralhado() {
+  const deck = [];
+  for (const n of naipes) for (const v of valores) deck.push({ valor: v, naipe: n });
+  for (let i = deck.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [deck[i], deck[j]] = [deck[j], deck[i]];
+  }
+  return deck;
+}
+
+// ====== Estrutura de salas ======
 let salas = {}; // { salaId: { players: [], estadoDoJogo: {...} } }
 
 io.on("connection", (socket) => {
@@ -46,24 +60,33 @@ io.on("connection", (socket) => {
 
     // Se todos prontos e pelo menos 2 jogadores
     if (sala.players.length >= 2 && sala.players.every(p => p.pronto)) {
-      // Inicializa estado do jogo
+      // Criar baralho e distribuir cartas
       const deck = criarDeckEmbaralhado();
-      const hands = [[], [], [], []];
-      for (let i = 0; i < 4; i++) hands[i] = deck.slice(i*10,(i+1)*10);
 
       sala.estadoDoJogo = {
-        hands,
+        turno: 0,
         trunfo: deck[0],
         jogadorComTrunfo: 0,
-        currentTurn: 1,
-        baralhadorAtual: 0,
+        hands: [
+          deck.slice(0,10),
+          deck.slice(10,20),
+          deck.slice(20,30),
+          deck.slice(30,40)
+        ],
+        cardsOnTable: [],
+        lixoEquipa1: [],
+        lixoEquipa2: [],
+        rondaAtual: 1
       };
 
-      io.to(salaId).emit(
-        "iniciar-jogo",
-        sala.players.map(p => p.nome),
-        sala.estadoDoJogo
-      );
+      // Emitir estado do jogo para todos os clientes
+      io.to(salaId).emit("iniciar-jogo", {
+        nomesJogadores: sala.players.map(p => p.nome),
+        hands: sala.estadoDoJogo.hands,
+        trunfo: sala.estadoDoJogo.trunfo,
+        jogadorComTrunfo: sala.estadoDoJogo.jogadorComTrunfo,
+        turno: sala.estadoDoJogo.turno
+      });
     }
   });
 
@@ -72,6 +95,7 @@ io.on("connection", (socket) => {
     const sala = salas[salaId];
     if (!sala || !sala.estadoDoJogo) return;
 
+    // Envia a jogada para todos os jogadores da sala
     io.to(salaId).emit("atualizar-jogada", { jogadorIndex, carta });
   });
 
@@ -86,18 +110,5 @@ io.on("connection", (socket) => {
     }
   });
 });
-
-// ---------- utilitário de deck ----------
-function criarDeckEmbaralhado() {
-  const naipes = ["♠","♥","♦","♣"];
-  const valores = ["A","7","K","J","Q","6","5","4","3","2"];
-  const deck = [];
-  for (const n of naipes) for (const v of valores) deck.push({ valor: v, naipe: n });
-  for (let i = deck.length-1;i>0;i--){
-    const j = Math.floor(Math.random()*(i+1));
-    [deck[i],deck[j]] = [deck[j],deck[i]];
-  }
-  return deck;
-}
 
 server.listen(PORT, () => console.log(`Servidor rodando em http://localhost:${PORT}`));
