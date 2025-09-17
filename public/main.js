@@ -78,14 +78,16 @@ function renderHands() {
       const d = document.createElement("div");
       d.className = "carta";
 
-      if (tiposJogador[p] === "computador" && !onlineGame) {
+      // Mostrar verso para todos os jogadores que não são o local
+      if (p !== meuIndex) {
         d.classList.add("carta-costa");
       } else {
         d.textContent = `${c.valor}${c.naipe}`;
         if (["♥","♦"].includes(c.naipe)) d.classList.add("red");
       }
 
-      let canClick = tiposJogador[p] === "humano" && p === currentTurn;
+      // Só jogador local pode clicar, e apenas na sua vez
+      let canClick = tiposJogador[p] === "humano" && p === currentTurn && p === meuIndex;
 
       if (canClick) {
         if (!leadingSuit || c.naipe === leadingSuit || !hasSuit) {
@@ -103,6 +105,8 @@ function renderHands() {
   }
   updatePanel();
 }
+
+
 
 // ---------- jogar carta ----------
 function attemptPlayCard(playerIndex, cardIndex) {
