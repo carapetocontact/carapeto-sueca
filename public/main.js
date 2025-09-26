@@ -297,8 +297,13 @@ function finalizarJogo() {
   let resultado = "";
   let cor = "";
 
-  if (p1 >= p2) { resultado = `🏆 Equipa 1 venceu! (${p1}-${p2})`; cor = "blue"; }
-  else { resultado = `🏆 Equipa 2 venceu! (${p2}-${p1})`; cor = "red"; }
+  if (p1 >= p2) { 
+    resultado = `🏆 Equipa 1 venceu! (${p1}-${p2})`; 
+    cor = "blue"; 
+  } else { 
+    resultado = `🏆 Equipa 2 venceu! (${p2}-${p1})`; 
+    cor = "red"; 
+  }
 
   document.getElementById("fim-jogo-titulo").style.color = cor;
   document.getElementById("fim-jogo-mensagem").textContent = resultado;
@@ -306,9 +311,14 @@ function finalizarJogo() {
   document.getElementById("fim-pontos2").textContent = `Equipa 2 & 4: ${p2} pontos`;
   document.getElementById("fim-jogo-modal").classList.remove("hidden");
 
+  // 🚀 Agora o Replay funciona também em modo online
   document.getElementById("btn-replay").onclick = () => {
     document.getElementById("fim-jogo-modal").classList.add("hidden");
-    iniciarNovoJogo();
+    if (onlineGame) {
+      if (typeof novoJogo === "function") novoJogo(); // pede novo jogo ao servidor
+    } else {
+      iniciarNovoJogo(); // mantém lógica offline
+    }
   };
 
   document.getElementById("btn-menu").onclick = () => {
@@ -317,6 +327,7 @@ function finalizarJogo() {
     document.getElementById("menu-inicial").style.display = "block";
   };
 }
+
 
 
 // ---------- iniciar novo jogo ----------
