@@ -37,9 +37,9 @@ btnEntrarSala.onclick = () => {
 
 // ================= EVENTOS =================
 
-// Atualiza lista de jogadores na sala
+// Atualiza lista de jogadores na sala e no fim de jogo
 socket.on("atualizar-jogadores", (jogadores) => {
-  listaJogadores.innerHTML = "<strong>Jogadores na sala:</strong><br>" +
+  const html = "<strong>Jogadores na sala:</strong><br>" +
     jogadores.map(j => {
       let tags = j.nome;
       if (j.pronto) tags += " (pronto)";
@@ -48,10 +48,18 @@ socket.on("atualizar-jogadores", (jogadores) => {
       return tags;
     }).join("<br>");
 
+  // Atualiza no lobby
+  listaJogadores.innerHTML = html;
+
+  // Atualiza no modal de fim de jogo (se existir o elemento)
+  const fimLista = document.getElementById("fim-lista-jogadores");
+  if (fimLista) fimLista.innerHTML = html;
+
   // Atualiza meuIndex
   const jogador = jogadores.find(j => j.nome === meuNome);
   if (jogador) meuIndex = jogador.index;
 });
+
 
 // Quando todos os jogadores estão prontos ou pedem replay → iniciar jogo
 socket.on("iniciar-jogo", ({ nomesJogadores, hands: serverHands, trunfo: serverTrunfo, jogadorComTrunfo: serverTrunfoPlayer, turno }) => {
