@@ -54,7 +54,7 @@ function iniciarJogo(salaId) {
   sala.players.forEach((p, idx) => {
     io.to(p.id).emit("iniciar-jogo", {
       nomesJogadores: sala.players.map(p => p.nome),
-      hand: sala.estadoDoJogo.hands[idx], // só a mão dele
+      hand: sala.estadoDoJogo.hands[p.index], // usa o index escolhido (0–3)
       trunfo: sala.estadoDoJogo.trunfo,
       jogadorComTrunfo: sala.estadoDoJogo.jogadorComTrunfo,
       turno: sala.estadoDoJogo.turno
@@ -66,7 +66,7 @@ io.on("connection", (socket) => {
   console.log(`Cliente conectado: ${socket.id}`);
 
   // Entrar ou criar sala
-  socket.on("entrar-sala", ({ salaId, nome, equipa = "A" }) => {
+  socket.on("entrar-sala", ({ salaId, nome, index }) => {
     if (!salas[salaId]) salas[salaId] = { players: [], estadoDoJogo: null };
     const sala = salas[salaId];
 
@@ -75,17 +75,18 @@ io.on("connection", (socket) => {
       return;
     }
 
-    const jogadorIndex = sala.players.length;
-    sala.players.push({
-      id: socket.id,
-      nome,
-      equipa,
-      pronto: false,
-      index: jogadorIndex
-    });
+    const jogadorIndex = (typeof index === "number") ? index : sala.players.length;
+
+    // Evita duplicados na mesma posição
+    if (sala.players.some(p => p.index === jogadorIndex)) {
+      socket.emit("erro-sala", "Essa posição já está ocupada!");
+      return;
+    }
+
+    sala.players.push({ id: socket.id, nome, pronto: false, index: jogadorIndex });
     socket.join(salaId);
 
-    console.log(`${nome} entrou na sala ${salaId} (J${jogadorIndex + 1}, Equipa ${equipa})`);
+    console.log(`${nome} entrou na sala ${salaId} (J${jogadorIndex + 1})`);
     io.to(salaId).emit("atualizar-jogadores", sala.players);
   });
 
@@ -99,13 +100,12 @@ io.on("connection", (socket) => {
 
     io.to(salaId).emit("atualizar-jogadores", sala.players);
 
-    // Se todos prontos e pelo menos 2 jogadores
     if (sala.players.length >= 2 && sala.players.every(p => p.pronto)) {
       iniciarJogo(salaId);
     }
   });
 
-  // Novo jogo (reset sem sair da sala)
+  // Novo jogo
   socket.on("novo-jogo", ({ salaId }) => {
     const sala = salas[salaId];
     if (!sala) return;
@@ -118,7 +118,6 @@ io.on("connection", (socket) => {
     const sala = salas[salaId];
     if (!sala || !sala.estadoDoJogo) return;
 
-    // Por enquanto só repassa jogada
     io.to(salaId).emit("atualizar-jogada", { jogadorIndex, carta });
   });
 
