@@ -11,8 +11,8 @@ app.use(express.static("public"));
 const PORT = process.env.PORT || 3000;
 
 // ====== Utilitárias do baralho ======
-const naipes = ["♠","♥","♦","♣"];
-const valores = ["A","7","K","J","Q","6","5","4","3","2"];
+const naipes = ["♠", "♥", "♦", "♣"];
+const valores = ["A", "7", "K", "J", "Q", "6", "5", "4", "3", "2"];
 
 function criarDeckEmbaralhado() {
   const deck = [];
@@ -27,11 +27,46 @@ function criarDeckEmbaralhado() {
 // ====== Estrutura de salas ======
 let salas = {}; // { salaId: { players: [], estadoDoJogo: {...} } }
 
+// ====== Função para iniciar jogo ======
+function iniciarJogo(salaId) {
+  const sala = salas[salaId];
+  if (!sala) return;
+
+  const deck = criarDeckEmbaralhado();
+
+  sala.estadoDoJogo = {
+    turno: 0,
+    trunfo: deck[0],
+    jogadorComTrunfo: 0,
+    hands: [
+      deck.slice(0, 10),
+      deck.slice(10, 20),
+      deck.slice(20, 30),
+      deck.slice(30, 40)
+    ],
+    cardsOnTable: [],
+    lixoEquipa1: [],
+    lixoEquipa2: [],
+    rondaAtual: 1
+  };
+
+  // Enviar apenas a mão de cada jogador
+  sala.players.forEach((p, idx) => {
+    io.to(p.id).emit("iniciar-jogo", {
+      nomesJogadores: sala.players.map(p => p.nome),
+      hand: sala.estadoDoJogo.hands[idx], // só a mão dele
+      trunfo: sala.estadoDoJogo.trunfo,
+      jogadorComTrunfo: sala.estadoDoJogo.jogadorComTrunfo,
+      turno: sala.estadoDoJogo.turno
+    });
+  });
+}
+
 io.on("connection", (socket) => {
   console.log(`Cliente conectado: ${socket.id}`);
 
   // Entrar ou criar sala
-  socket.on("entrar-sala", ({ salaId, nome }) => {
+  socket.on("entrar-sala", ({ salaId, nome, equipa = "A" }) => {
     if (!salas[salaId]) salas[salaId] = { players: [], estadoDoJogo: null };
     const sala = salas[salaId];
 
@@ -41,10 +76,16 @@ io.on("connection", (socket) => {
     }
 
     const jogadorIndex = sala.players.length;
-    sala.players.push({ id: socket.id, nome, pronto: false, index: jogadorIndex });
+    sala.players.push({
+      id: socket.id,
+      nome,
+      equipa,
+      pronto: false,
+      index: jogadorIndex
+    });
     socket.join(salaId);
 
-    console.log(`${nome} entrou na sala ${salaId} (J${jogadorIndex+1})`);
+    console.log(`${nome} entrou na sala ${salaId} (J${jogadorIndex + 1}, Equipa ${equipa})`);
     io.to(salaId).emit("atualizar-jogadores", sala.players);
   });
 
@@ -60,34 +101,16 @@ io.on("connection", (socket) => {
 
     // Se todos prontos e pelo menos 2 jogadores
     if (sala.players.length >= 2 && sala.players.every(p => p.pronto)) {
-      // Criar baralho e distribuir cartas
-      const deck = criarDeckEmbaralhado();
-
-      sala.estadoDoJogo = {
-        turno: 0,
-        trunfo: deck[0],
-        jogadorComTrunfo: 0,
-        hands: [
-          deck.slice(0,10),
-          deck.slice(10,20),
-          deck.slice(20,30),
-          deck.slice(30,40)
-        ],
-        cardsOnTable: [],
-        lixoEquipa1: [],
-        lixoEquipa2: [],
-        rondaAtual: 1
-      };
-
-      // Emitir estado do jogo para todos os clientes
-      io.to(salaId).emit("iniciar-jogo", {
-        nomesJogadores: sala.players.map(p => p.nome),
-        hands: sala.estadoDoJogo.hands,
-        trunfo: sala.estadoDoJogo.trunfo,
-        jogadorComTrunfo: sala.estadoDoJogo.jogadorComTrunfo,
-        turno: sala.estadoDoJogo.turno
-      });
+      iniciarJogo(salaId);
     }
+  });
+
+  // Novo jogo (reset sem sair da sala)
+  socket.on("novo-jogo", ({ salaId }) => {
+    const sala = salas[salaId];
+    if (!sala) return;
+    console.log(`Novo jogo iniciado na sala ${salaId}`);
+    iniciarJogo(salaId);
   });
 
   // Receber jogada
@@ -95,7 +118,7 @@ io.on("connection", (socket) => {
     const sala = salas[salaId];
     if (!sala || !sala.estadoDoJogo) return;
 
-    // Envia a jogada para todos os jogadores da sala
+    // Por enquanto só repassa jogada
     io.to(salaId).emit("atualizar-jogada", { jogadorIndex, carta });
   });
 
@@ -111,4 +134,6 @@ io.on("connection", (socket) => {
   });
 });
 
-server.listen(PORT, () => console.log(`Servidor rodando em http://localhost:${PORT}`));
+server.listen(PORT, () =>
+  console.log(`Servidor rodando em http://localhost:${PORT}`)
+);
