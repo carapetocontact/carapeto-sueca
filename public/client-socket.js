@@ -66,10 +66,9 @@ socket.on("atualizar-jogadores", (jogadores) => {
   if (jogador) meuIndex = jogador.index;
 });
 
-
 // Quando todos os jogadores estão prontos ou pedem replay → iniciar jogo
 socket.on("iniciar-jogo", ({ nomesJogadores, hands: serverHands, trunfo: serverTrunfo, jogadorComTrunfo: serverTrunfoPlayer, turno }) => {
-  debugOnline("Novo jogo iniciado!");
+  debugOnline("Novo jogo iniciado! (via servidor)");
 
   // Configura tipos de jogadores
   tiposJogador = ["computador","computador","computador","computador"];
@@ -90,10 +89,9 @@ socket.on("iniciar-jogo", ({ nomesJogadores, hands: serverHands, trunfo: serverT
   atualizarTrunfoLabel();
 });
 
-// Recebe jogada de outro jogador (ou eco da nossa)
+// Recebe jogada de outro jogador
 socket.on("atualizar-jogada", ({ jogadorIndex, carta }) => {
   debugOnline(`Jogador ${jogadorIndex+1} jogou`);
-  
   if (jogadorIndex !== meuIndex) {
     attemptPlayCard(jogadorIndex, carta);
   }
@@ -108,7 +106,7 @@ function enviarJogada(playerIndex, cardIndex) {
 
 // Sinalizar que estou pronto
 btnPronto.onclick = () => {
-  debugOnline(`${meuNome} clicou pronto`);
+  debugOnline(`${meuIndex+1 || "?"} clicou pronto`);
   socket.emit("pronto", { salaId: minhaSala });
   btnPronto.disabled = true;
 };
@@ -116,7 +114,7 @@ btnPronto.onclick = () => {
 // 🚀 Sinalizar que quero Replay
 if (btnReplay) {
   btnReplay.onclick = () => {
-    debugOnline(`${meuNome} pediu replay`);
+    debugOnline(`${meuIndex+1 || "?"} pediu replay`);
     socket.emit("replay", { salaId: minhaSala });
     btnReplay.disabled = true; // evita clique duplo
   };
