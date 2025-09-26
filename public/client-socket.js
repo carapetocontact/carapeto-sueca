@@ -6,66 +6,67 @@ const btnEntrarSala = document.getElementById("btn-entrar-sala");
 const btnPronto = document.getElementById("btn-pronto");
 const nomeInput = document.getElementById("nome-jogador");
 const salaInput = document.getElementById("sala-id");
+const posicaoInput = document.getElementById("posicao-jogador"); // 🚀 novo
 const listaJogadores = document.getElementById("lista-jogadores");
 
 // Variáveis
 let minhaSala = "";
 let meuNome = "";
-let minhaEquipa = "A"; // 🚀 por agora default A (podes ligar a um radio button depois)
 
 meuIndex = null; // slot do jogador (0 a 3) já let no main.js
 
-// Entrar na sala
+// ================= ENTRAR NA SALA =================
 btnEntrarSala.onclick = () => {
   meuNome = nomeInput.value.trim();
   minhaSala = salaInput.value.trim();
+  const posicao = parseInt(posicaoInput.value, 10);
 
   if (!meuNome || !minhaSala) {
     alert("Preenche o teu nome e a sala.");
     return;
   }
 
-  socket.emit("entrar-sala", { nome: meuNome, salaId: minhaSala, equipa: minhaEquipa });
+  socket.emit("entrar-sala", { nome: meuNome, salaId: minhaSala, index: posicao });
 
   nomeInput.disabled = true;
   salaInput.disabled = true;
+  posicaoInput.disabled = true;
   btnEntrarSala.disabled = true;
 
   listaJogadores.innerHTML = "Aguardando outros jogadores...";
   btnPronto.disabled = false;
 };
 
-// ================= EVENTOS =================
+// ================= EVENTOS DO SERVIDOR =================
 
-// Atualiza lista de jogadores na sala
+// Atualizar lista de jogadores
 socket.on("atualizar-jogadores", (jogadores) => {
   listaJogadores.innerHTML = "<strong>Jogadores na sala:</strong><br>" +
     jogadores.map(j => {
       let tag = j.nome + (j.pronto ? " (pronto)" : "");
-      if (j.nome === meuNome) tag += " ← Tu (J" + (j.index + 1) + ")";
-      return tag + " [Equipa " + j.equipa + "]";
+      if (j.id === socket.id) tag += " ← Tu (J" + (j.index + 1) + ")";
+      return tag;
     }).join("<br>");
 
-  // Atualiza meuIndex
-  const jogador = jogadores.find(j => j.nome === meuNome);
-  if (jogador) meuIndex = jogador.index;
+  // ✅ Define o meuIndex pelo socket.id
+  const eu = jogadores.find(j => j.id === socket.id);
+  if (eu) meuIndex = eu.index;
 });
 
-// Quando todos os jogadores estão prontos, iniciar jogo
+// Início do jogo
 socket.on("iniciar-jogo", ({ nomesJogadores, hand, trunfo: serverTrunfo, jogadorComTrunfo: serverTrunfoPlayer, turno }) => {
-  // Define todos como humano por agora (podes mudar a lógica depois)
-  tiposJogador = ["computador","computador","computador","computador"];
-  nomesJogadores.forEach((nome,i) => tiposJogador[i] = "humano");
+  onlineGame = true;
 
-  // Reset ao estado local
+  // Reset estado local
   hands = [[], [], [], []];
   lixoEquipa1 = [];
   lixoEquipa2 = [];
   cardsOnTable = [];
   rondaAtual = 1;
 
-  // Só a nossa mão
-  hands[meuIndex] = hand;
+  // Só a minha mão
+  if (meuIndex === null) meuIndex = 0; // fallback
+  hands[meuIndex] = hand || [];
 
   trunfo = serverTrunfo;
   jogadorComTrunfo = serverTrunfoPlayer;
@@ -76,20 +77,18 @@ socket.on("iniciar-jogo", ({ nomesJogadores, hand, trunfo: serverTrunfo, jogador
   atualizarTrunfoLabel();
 });
 
-// Recebe jogada de outro jogador
+// Jogada de outro jogador
 socket.on("atualizar-jogada", ({ jogadorIndex, carta }) => {
   if (jogadorIndex !== meuIndex) {
     aplicarJogadaRemota(jogadorIndex, carta);
   }
 });
 
-// ================= FUNÇÕES =================
+// ================= FUNÇÕES AUXILIARES =================
 
 // Enviar jogada do jogador local
 function enviarJogada(playerIndex, cardIndex) {
-  const carta = hands[playerIndex][cardIndex]; // objeto {valor,naipe}
-  // remove da mão local já (renderHands trata da UI)
-  hands[playerIndex].splice(cardIndex, 1);
+  const carta = hands[playerIndex][cardIndex]; // objeto {valor, naipe}
   socket.emit("jogada", { salaId: minhaSala, jogadorIndex: playerIndex, carta });
 }
 
@@ -103,22 +102,35 @@ function aplicarJogadaRemota(playerIndex, carta) {
 
   cardsOnTable.push({ player: playerIndex, card: carta });
 
-  if (cardsOnTable.length === 4) setTimeout(resolveRound, 300);
-  else {
+  if (cardsOnTable.length === 4) {
+    setTimeout(resolveRound, 300);
+  } else {
     currentTurn = (currentTurn + 1) % 4;
     updatePanel();
   }
 }
 
-// Sinalizar que estou pronto
+// ================= BOTÕES =================
+
+// Marcar como pronto
 btnPronto.onclick = () => {
   socket.emit("pronto", { salaId: minhaSala });
   btnPronto.disabled = true;
 };
 
-// Reiniciar jogo (chamar no botão "Replay")
+// Replay → pedir novo jogo ao servidor
 function novoJogo() {
   if (minhaSala) {
     socket.emit("novo-jogo", { salaId: minhaSala });
   }
 }
+
+// ================= MONKEY PATCH =================
+// Substituir attemptPlayCard para multiplayer online
+const attemptPlayCardOriginal = attemptPlayCard;
+attemptPlayCard = function(playerIndex, cardIndex) {
+  if (tiposJogador[playerIndex] === "humano" && playerIndex === meuIndex) {
+    enviarJogada(playerIndex, cardIndex);
+  }
+  attemptPlayCardOriginal(playerIndex, cardIndex);
+};

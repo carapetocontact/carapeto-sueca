@@ -37,12 +37,23 @@
     <div id="config-online" class="config-modo" style="display:none;">
       <label for="nome-jogador">Nome:</label>
       <input type="text" id="nome-jogador" placeholder="Teu nome">
+
       <label for="sala-id">ID da Sala:</label>
       <input type="text" id="sala-id" placeholder="ex: sala1">
+
+      <label for="posicao-jogador">Posição (J1–J4):</label>
+      <select id="posicao-jogador">
+        <option value="0">Jogador 1 (Equipa 1)</option>
+        <option value="1">Jogador 2 (Equipa 2)</option>
+        <option value="2">Jogador 3 (Equipa 1)</option>
+        <option value="3">Jogador 4 (Equipa 2)</option>
+      </select>
+
       <button id="btn-entrar-sala">Entrar na Sala</button>
       <button id="btn-pronto" disabled>Pronto</button>
       <div id="lista-jogadores"></div>
     </div>
+
 
     <!-- Multiplayer Local -->
     <div id="config-local" class="config-modo" style="display:none;">
