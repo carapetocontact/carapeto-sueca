@@ -1,6 +1,5 @@
+
 // ====== Configuração ======
-const naipes = ["♠", "♥", "♦", "♣"];
-const valores = ["A", "7", "K", "J", "Q", "6", "5", "4", "3", "2"];
 const playerIds = ["jogador1", "jogador2", "jogador3", "jogador4"];
 
 let hands = [[], [], [], []];
@@ -17,11 +16,13 @@ let modoJogo;
 let tiposJogador = ["humano", "humano", "humano", "humano"];
 let jogadorHumano = null;
 let jogadoresComputador = [];
-let onlineGame = false; // 🚀 novo: distingue modo online
-let meuIndex = null; // índice do jogador local
+let onlineGame = false;
+let meuIndex = null;
 
+const socket = io();
+let minhaSala = null;
 
-// DOM
+// ====== DOM ======
 const pontos1El = document.getElementById("pontos1");
 const pontos2El = document.getElementById("pontos2");
 const lixo1CardsEl = document.getElementById("lixo1-cartas");
@@ -31,64 +32,62 @@ const turnoInfo = document.getElementById("turno-info");
 const trunfoSlot = document.getElementById("trunfo-slot");
 const trunfoLabel = document.getElementById("trunfo-label");
 
-// ---------- utilitárias ----------
-function criarBaralho() {
-  const deck = [];
-  for (const naipe of naipes) for (const valor of valores) deck.push({ valor, naipe });
-  return deck;
-}
-
-function embaralhar(arr) {
-  for (let i = arr.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [arr[i], arr[j]] = [arr[j], arr[i]];
+// ====== Inicialização ======
+document.addEventListener("DOMContentLoaded", () => {
+  if (!onlineGame) {
+    iniciarNovoJogo();
   }
-  return arr;
-}
+});
 
-function valorCarta(c) { return valores.length - valores.indexOf(c.valor); }
-function pontosCarta(c) {
-  switch (c.valor) {
-    case "A": return 11;
-    case "7": return 10;
-    case "K": return 4;
-    case "J": return 3;
-    case "Q": return 2;
-    default: return 0;
-  }
-}
 
+// ---------- UI helpers ----------
 function atualizarTrunfoLabel() {
-  if (jogadorComTrunfo !== null) {
+  if (jogadorComTrunfo !== null && trunfo) {
+    // Atualiza texto do label
     trunfoLabel.textContent = `Trunfo (J${jogadorComTrunfo + 1})`;
+
+    // Atualiza carta do trunfo
+    trunfoSlot.textContent = `${trunfo.valor}${trunfo.naipe}`;
+    trunfoSlot.classList.remove("red");
+    if (["♥", "♦"].includes(trunfo.naipe)) {
+      trunfoSlot.classList.add("red");
+    }
   } else {
+    // Se não houver trunfo
     trunfoLabel.textContent = "";
+    trunfoSlot.textContent = "";
+    trunfoSlot.classList.remove("red");
   }
 }
+
 
 // ---------- render mãos ----------
 function renderHands() {
-  document.getElementById('maos').style.flexDirection = 'row';
-  document.getElementById('maos').style.flexWrap = 'wrap';
+  const maosDiv = document.getElementById("maos");
+  maosDiv.style.flexDirection = "row";
+  maosDiv.style.flexWrap = "wrap";
 
   for (let p = 0; p < 4; p++) {
     const container = document.getElementById(playerIds[p]);
     container.innerHTML = `<strong>J${p + 1}</strong>`;
 
-    // Mostrar todas as mãos se local ou programador
-    const mostrarMao = (modoJogo === "local" || modoJogo === "programador") || (p === meuIndex);
+    const mostrarMao =
+      modoJogo === "local" || modoJogo === "programador" || p === meuIndex;
 
     if (mostrarMao) {
-      container.style.display = "flex";  // mostrar
-      const leadingSuit = cardsOnTable.length > 0 ? cardsOnTable[0].card.naipe : null;
-      const hasSuit = leadingSuit ? hands[p].some(c => c.naipe === leadingSuit) : false;
+      container.style.display = "flex";
+      const leadingSuit =
+        cardsOnTable.length > 0 ? cardsOnTable[0].card.naipe : null;
+      const hasSuit = leadingSuit
+        ? hands[p].some((c) => c.naipe === leadingSuit)
+        : false;
 
       for (let i = 0; i < hands[p].length; i++) {
         const c = hands[p][i];
         const d = document.createElement("div");
         d.className = "carta";
         d.textContent = `${c.valor}${c.naipe}`;
-        if (["♥","♦"].includes(c.naipe)) d.classList.add("red");
+        if (["♥", "♦"].includes(c.naipe)) d.classList.add("red");
 
         let canClick = tiposJogador[p] === "humano" && p === currentTurn;
         if (canClick) {
@@ -105,50 +104,41 @@ function renderHands() {
         container.appendChild(d);
       }
     } else {
-      container.style.display = "none"; // esconder nos outros casos
+      container.style.display = "none";
     }
   }
 
   updatePanel();
 }
 
-
-
-
-
-
-
-
-
 // ---------- jogar carta ----------
 function attemptPlayCard(playerIndex, cardIndex) {
   if (playerIndex !== currentTurn) return;
 
   if (onlineGame) {
-    // 🚀 online: apenas envia jogada ao servidor
     enviarJogada(playerIndex, cardIndex);
     return;
   }
-
-  // offline: lógica local
   jogarCartaLocal(playerIndex, cardIndex);
 }
 
 function jogarCartaLocal(playerIndex, cardIndex) {
-  const leadingSuit = cardsOnTable.length > 0 ? cardsOnTable[0].card.naipe : null;
+  const leadingSuit =
+    cardsOnTable.length > 0 ? cardsOnTable[0].card.naipe : null;
   const played = hands[playerIndex][cardIndex];
 
   if (leadingSuit) {
-    const hasSuit = hands[playerIndex].some(c => c.naipe === leadingSuit);
+    const hasSuit = hands[playerIndex].some((c) => c.naipe === leadingSuit);
     if (hasSuit && played.naipe !== leadingSuit) return;
   }
 
   hands[playerIndex].splice(cardIndex, 1);
+
   const dom = document.createElement("div");
   dom.className = "carta carta-jogada";
   dom.textContent = `${played.valor}${played.naipe}`;
-  if (["♥","♦"].includes(played.naipe)) dom.classList.add("red");
-  document.getElementById(`slot-j${playerIndex+1}`).appendChild(dom);
+  if (["♥", "♦"].includes(played.naipe)) dom.classList.add("red");
+  document.getElementById(`slot-j${playerIndex + 1}`).appendChild(dom);
 
   cardsOnTable.push({ player: playerIndex, card: played });
 
@@ -168,30 +158,16 @@ function proximoTurno() {
 
 // ---------- resolver ronda ----------
 function resolveRound() {
-  const leadSuit = cardsOnTable[0].card.naipe;
-  let winner = cardsOnTable[0].player;
-  let winningCard = cardsOnTable[0].card;
+  const result = resolverRonda(cardsOnTable, trunfo);
+  if (!result) return;
 
-  for (let i = 1; i < cardsOnTable.length; i++) {
-    const c = cardsOnTable[i].card;
-    const p = cardsOnTable[i].player;
-    if (c.naipe === trunfo.naipe) {
-      if (winningCard.naipe !== trunfo.naipe || valorCarta(c) > valorCarta(winningCard)) {
-        winner = p;
-        winningCard = c;
-      }
-    } else if (c.naipe === leadSuit) {
-      if (winningCard.naipe === leadSuit && valorCarta(c) > valorCarta(winningCard)) {
-        winner = p;
-        winningCard = c;
-      }
-    }
-  }
+  const { winner, winningCard } = result;
 
-  if ([0,2].includes(winner)) cardsOnTable.forEach(p => lixoEquipa1.push(p.card));
-  else cardsOnTable.forEach(p => lixoEquipa2.push(p.card));
+  if ([0, 2].includes(winner))
+    cardsOnTable.forEach((p) => lixoEquipa1.push(p.card));
+  else cardsOnTable.forEach((p) => lixoEquipa2.push(p.card));
 
-  document.querySelectorAll(".carta-jogada").forEach(c => c.remove());
+  document.querySelectorAll(".carta-jogada").forEach((c) => c.remove());
   rondaAtual++;
   updatePointsUI();
   updatePanel();
@@ -200,14 +176,14 @@ function resolveRound() {
   const roundWinnerMsg = document.getElementById("round-winner-msg");
   const roundWinnerCard = document.getElementById("round-winner-card");
 
-  roundWinnerMsg.textContent = `Jogador ${winner+1} ganhou!`;
+  roundWinnerMsg.textContent = `Jogador ${winner + 1} ganhou!`;
   roundWinnerCard.innerHTML = "";
   const cartaVencedora = document.createElement("div");
   cartaVencedora.className = "carta";
   cartaVencedora.style.width = "100px";
   cartaVencedora.style.height = "150px";
   cartaVencedora.textContent = `${winningCard.valor}${winningCard.naipe}`;
-  if (["♥","♦"].includes(winningCard.naipe)) cartaVencedora.classList.add("red");
+  if (["♥", "♦"].includes(winningCard.naipe)) cartaVencedora.classList.add("red");
   roundWinnerCard.appendChild(cartaVencedora);
 
   roundWinnerDiv.style.display = "block";
@@ -218,7 +194,7 @@ function resolveRound() {
     currentTurn = winner;
     renderHands();
 
-    if (!hands.some(h => h.length > 0)) {
+    if (!hands.some((h) => h.length > 0)) {
       finalizarJogo();
       return;
     }
@@ -238,23 +214,15 @@ function resolveRound() {
 // ---------- atualizar painel e pontos ----------
 function updatePanel() {
   rondaInfo.textContent = `Ronda ${Math.min(rondaAtual, 10)} / 10`;
+
   if (tiposJogador[currentTurn] === "humano") {
-      turnoInfo.textContent = (currentTurn === meuIndex) ?
-          "É a tua vez de jogar!" :
-          `É a vez de J${currentTurn+1} jogar`;
+    turnoInfo.textContent =
+      currentTurn === meuIndex
+        ? "É a tua vez de jogar!"
+        : `É a vez de J${currentTurn + 1} jogar`;
   } else {
-      turnoInfo.textContent = `O computador (J${currentTurn+1}) está a jogar...`;
+    turnoInfo.textContent = `O computador (J${currentTurn + 1}) está a jogar...`;
   }
-
-  if (trunfo) {
-    trunfoSlot.textContent = `${trunfo.valor}${trunfo.naipe}`;
-    trunfoSlot.classList.remove("red");
-    if (["♥","♦"].includes(trunfo.naipe)) {
-      trunfoSlot.classList.add("red");
-    }
-  }
-  
-
 
   atualizarTrunfoLabel();
 
@@ -264,21 +232,22 @@ function updatePanel() {
     el.classList.toggle("active", i === currentTurn);
   }
 
+  // Atualiza lixo
   lixo1CardsEl.innerHTML = "";
-  lixoEquipa1.forEach(c => {
+  lixoEquipa1.forEach((c) => {
     const d = document.createElement("div");
     d.className = "carta";
     d.textContent = `${c.valor}${c.naipe}`;
-    if (["♥","♦"].includes(c.naipe)) d.classList.add("red");
+    if (["♥", "♦"].includes(c.naipe)) d.classList.add("red");
     lixo1CardsEl.appendChild(d);
   });
 
   lixo2CardsEl.innerHTML = "";
-  lixoEquipa2.forEach(c => {
+  lixoEquipa2.forEach((c) => {
     const d = document.createElement("div");
     d.className = "carta";
     d.textContent = `${c.valor}${c.naipe}`;
-    if (["♥","♦"].includes(c.naipe)) d.classList.add("red");
+    if (["♥", "♦"].includes(c.naipe)) d.classList.add("red");
     lixo2CardsEl.appendChild(d);
   });
 }
@@ -297,8 +266,13 @@ function finalizarJogo() {
   let resultado = "";
   let cor = "";
 
-  if (p1 >= p2) { resultado = `🏆 Equipa 1 venceu! (${p1}-${p2})`; cor = "blue"; }
-  else { resultado = `🏆 Equipa 2 venceu! (${p2}-${p1})`; cor = "red"; }
+  if (p1 >= p2) {
+    resultado = `🏆 Equipa 1 venceu! (${p1}-${p2})`;
+    cor = "blue";
+  } else {
+    resultado = `🏆 Equipa 2 venceu! (${p2}-${p1})`;
+    cor = "red";
+  }
 
   document.getElementById("fim-jogo-titulo").style.color = cor;
   document.getElementById("fim-jogo-mensagem").textContent = resultado;
@@ -310,14 +284,11 @@ function finalizarJogo() {
     document.getElementById("fim-jogo-modal").classList.add("hidden");
 
     if (onlineGame) {
-      // 🚀 pede replay ao servidor
       socket.emit("replay", { salaId: minhaSala });
     } else {
-      // offline: reinicia localmente
       iniciarNovoJogo();
     }
   };
-
 
   document.getElementById("btn-menu").onclick = () => {
     document.getElementById("fim-jogo-modal").classList.add("hidden");
@@ -326,29 +297,26 @@ function finalizarJogo() {
   };
 }
 
-
 // ---------- iniciar novo jogo ----------
 function iniciarNovoJogo() {
-  // Define índice do jogador local se singleplayer
   if (modoJogo === "singleplayer") meuIndex = 0;
 
-  const deck = embaralhar(criarBaralho());
+  const {
+    hands: newHands,
+    trunfo: newTrunfo,
+    jogadorComTrunfo: newJogadorComTrunfo,
+  } = distribuirCartas(baralhadorAtual);
 
-  hands = [[], [], [], []];
+  hands = newHands;
+  trunfo = newTrunfo;
+  jogadorComTrunfo = newJogadorComTrunfo;
   lixoEquipa1 = [];
   lixoEquipa2 = [];
   cardsOnTable = [];
   rondaAtual = 1;
 
-  currentTurn = (baralhadorAtual + 3) % 4; // jogador à direita do baralhador
-  jogadorComTrunfo = baralhadorAtual;
-  trunfo = deck[0];
+  currentTurn = (baralhadorAtual + 3) % 4;
 
-  for (let i = 0; i < 4; i++) {
-    hands[i] = deck.slice(i * 10, (i + 1) * 10);
-  }
-
-  // 🚀 Certifica-se de que meuIndex está definido antes de renderizar
   if (meuIndex === null) meuIndex = 0;
 
   renderHands();
@@ -359,6 +327,8 @@ function iniciarNovoJogo() {
   }
 
   baralhadorAtual = (baralhadorAtual + 1) % 4;
+  console.log("[DEBUG] Trunfo definido:", trunfo, "pelo jogador", jogadorComTrunfo + 1);
+
 }
 
 // ---------- start game ----------
@@ -372,13 +342,12 @@ function startGame(modo, tipos, baralhador, estadoServidor = null) {
     onlineGame = false;
   } else if (modoJogo === "online") {
     onlineGame = true;
-    // meuIndex será definido pelo servidor
   }
 
   jogadorHumano = tiposJogador.indexOf("humano");
   jogadoresComputador = tiposJogador
     .map((t, i) => (t === "computador" ? i : -1))
-    .filter(i => i !== -1);
+    .filter((i) => i !== -1);
 
   if (modo === "online" && estadoServidor) {
     hands = estadoServidor.hands;
@@ -390,7 +359,6 @@ function startGame(modo, tipos, baralhador, estadoServidor = null) {
     lixoEquipa2 = [];
     cardsOnTable = [];
 
-    // 🚀 Se meuIndex não foi setado, pega do estado do servidor
     if (meuIndex === null && estadoServidor.meuIndex !== undefined) {
       meuIndex = estadoServidor.meuIndex;
     }
@@ -402,10 +370,6 @@ function startGame(modo, tipos, baralhador, estadoServidor = null) {
     iniciarNovoJogo();
   }
 }
-
-
-
-
 
 // ---------- eventos ----------
 document.getElementById("btn-novo-jogo").onclick = iniciarNovoJogo;
