@@ -140,11 +140,12 @@ function attemptPlayCard(playerIndex, cardIndex) {
 
   if (onlineGame) {
     enviarJogada(playerIndex, cardIndex);
-    return; // 🚀 não aplica localmente
+    return; // não aplica localmente
   }
 
   jogarCartaLocal(playerIndex, cardIndex);
 }
+
 
 
 
@@ -176,18 +177,11 @@ function proximoTurno() {
   renderHands();
 
   if (tiposJogador[currentTurn] === "computador") {
-    setTimeout(() => {
-      if (onlineGame) {
-        // IA só devolve o índice
-        const cardIndex = escolherCartaIA(currentTurn);
-        // Envia e aplica já localmente
-        enviarJogada(currentTurn, cardIndex);
-        jogarCartaLocal(currentTurn, cardIndex);
-      } else {
-        jogadaComputador(currentTurn);
-      }
-    }, 500);
-  }
+  setTimeout(() => {
+    jogadaComputador(currentTurn);
+  }, 500);
+}
+
 
 
 }
@@ -250,16 +244,11 @@ function resolveRound() {
     }
 
     if (tiposJogador[currentTurn] === "computador") {
-      setTimeout(() => {
-        if (onlineGame) {
-          const cardIndex = escolherCartaIA(currentTurn);
-          enviarJogada(currentTurn, cardIndex);
-          jogarCartaLocal(currentTurn, cardIndex);
-        } else {
-          jogadaComputador(currentTurn);
-        }
-      }, 500);
-    }
+  setTimeout(() => {
+    jogadaComputador(currentTurn);
+  }, 500);
+}
+
 
 
   }
@@ -411,15 +400,10 @@ function iniciarNovoJogo() {
 
   if (tiposJogador[currentTurn] === "computador") {
     setTimeout(() => {
-      if (onlineGame) {
-        const cardIndex = escolherCartaIA(currentTurn);
-        enviarJogada(currentTurn, cardIndex);
-        jogarCartaLocal(currentTurn, cardIndex);
-      } else {
-        jogadaComputador(currentTurn);
-      }
+      jogadaComputador(currentTurn);
     }, 500);
   }
+
 
 
   baralhadorAtual = (baralhadorAtual + 1) % 4;

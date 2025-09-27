@@ -62,12 +62,16 @@ socket.on("iniciar-jogo", (dados) => {
     turno: dados.turno
   };
 
+  // Recalcular meuIndex com lista final
+  const eu = dados.jogadores.find(j => j.nome === meuNome);
+  if (eu) meuIndex = eu.index;
+
   window.dispatchEvent(new CustomEvent("iniciarJogo", { detail: config }));
 });
 
-// Recebe jogada de outro jogador
+// Recebe jogada de qualquer jogador (inclui bots e eu próprio)
 socket.on("atualizar-jogada", ({ jogadorIndex, carta }) => {
-  attemptPlayCard(jogadorIndex, carta); // aplica sempre via eco
+  jogarCartaLocal(jogadorIndex, carta); // aplica sempre via eco
 });
 
 // ================= FUNÇÕES =================

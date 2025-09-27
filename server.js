@@ -41,7 +41,7 @@ io.on("connection", (socket) => {
     }
 
     const jogadorIndex = sala.players.length;
-    sala.players.push({ id: socket.id, nome, pronto: false, index: jogadorIndex });
+    sala.players.push({ id: socket.id, nome, pronto: false, index: jogadorIndex, tipo: "humano" });
     socket.join(salaId);
 
     console.log(`${nome} entrou na sala ${salaId} (J${jogadorIndex+1})`);
@@ -58,7 +58,7 @@ io.on("connection", (socket) => {
 
     io.to(salaId).emit("atualizar-jogadores", sala.players);
 
-    // Se todos prontos e pelo menos 2 jogadores humanos
+    // Se todos prontos e pelo menos 2 jogadores
     if (sala.players.length >= 2 && sala.players.every(p => p.pronto)) {
       // Preencher com bots até 4 jogadores
       if (sala.players.length < 4) {
@@ -71,6 +71,7 @@ io.on("connection", (socket) => {
             tipo: "computador"
           });
         }
+        io.to(salaId).emit("atualizar-jogadores", sala.players);
       }
 
       // Criar baralho e distribuir cartas
@@ -96,10 +97,10 @@ io.on("connection", (socket) => {
       io.to(salaId).emit("iniciar-jogo", {
         jogadores: sala.players.map(p => ({
           nome: p.nome,
-          tipo: p.tipo || "humano", // se não tiver tipo, assume humano
+          tipo: p.tipo,
           index: p.index
         })),
-        baralhador: 0, // podes mudar para rodar/aleatório se quiseres
+        baralhador: 0, // podes randomizar se quiseres
         hands: sala.estadoDoJogo.hands,
         trunfo: sala.estadoDoJogo.trunfo,
         jogadorComTrunfo: sala.estadoDoJogo.jogadorComTrunfo,
@@ -108,13 +109,11 @@ io.on("connection", (socket) => {
     }
   });
 
-
-  // Receber jogada
+  // Receber jogada e ecoar para todos
   socket.on("jogada", ({ salaId, jogadorIndex, carta }) => {
     const sala = salas[salaId];
     if (!sala || !sala.estadoDoJogo) return;
 
-    // Envia a jogada para todos os jogadores da sala
     io.to(salaId).emit("atualizar-jogada", { jogadorIndex, carta });
   });
 
