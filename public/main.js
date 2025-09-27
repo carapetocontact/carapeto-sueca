@@ -139,16 +139,13 @@ function attemptPlayCard(playerIndex, cardIndex) {
   if (playerIndex !== currentTurn) return;
 
   if (onlineGame) {
-    // 🚀 envia ao servidor
     enviarJogada(playerIndex, cardIndex);
-    // 🚀 aplica já localmente
-    jogarCartaLocal(playerIndex, cardIndex);
-    return;
+    return; // 🚀 não aplica localmente
   }
 
-  // offline: lógica local
   jogarCartaLocal(playerIndex, cardIndex);
 }
+
 
 
 function jogarCartaLocal(playerIndex, cardIndex) {

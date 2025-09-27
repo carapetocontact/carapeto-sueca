@@ -67,9 +67,7 @@ socket.on("iniciar-jogo", (dados) => {
 
 // Recebe jogada de outro jogador
 socket.on("atualizar-jogada", ({ jogadorIndex, carta }) => {
-  if (jogadorIndex !== meuIndex) {
-    attemptPlayCard(jogadorIndex, carta);
-  }
+  attemptPlayCard(jogadorIndex, carta); // aplica sempre via eco
 });
 
 // ================= FUNÇÕES =================
