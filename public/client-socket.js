@@ -38,15 +38,18 @@ btnEntrarSala.onclick = () => {
 
 // Atualiza lista de jogadores na sala
 socket.on("atualizar-jogadores", (jogadores) => {
-  listaJogadores.innerHTML = "<strong>Jogadores na sala:</strong><br>" +
-    jogadores.map(j => {
-      let tag = j.nome + (j.pronto ? " (pronto)" : "");
-      if (j.nome === meuNome) tag += " ← Tu (J" + (j.index + 1) + ")";
-      return tag;
-    }).join("<br>");
+  listaJogadores.innerHTML =
+    "<strong>Jogadores na sala:</strong><br>" +
+    jogadores
+      .map((j) => {
+        let tag = j.nome + (j.pronto ? " (pronto)" : "");
+        if (j.nome === meuNome) tag += " ← Tu (J" + (j.index + 1) + ")";
+        return tag;
+      })
+      .join("<br>");
 
   // Atualiza meuIndex
-  const jogador = jogadores.find(j => j.nome === meuNome);
+  const jogador = jogadores.find((j) => j.nome === meuNome);
   if (jogador) meuIndex = jogador.index;
 });
 
@@ -59,30 +62,50 @@ socket.on("iniciar-jogo", (dados) => {
     hands: dados.hands,
     trunfo: dados.trunfo,
     jogadorComTrunfo: dados.jogadorComTrunfo,
-    turno: dados.turno
+    turno: dados.turno,
   };
 
   // Recalcular meuIndex com lista final
-  const eu = dados.jogadores.find(j => j.nome === meuNome);
+  const eu = dados.jogadores.find((j) => j.nome === meuNome);
   if (eu) meuIndex = eu.index;
 
   window.dispatchEvent(new CustomEvent("iniciarJogo", { detail: config }));
 });
 
-// Recebe jogada de qualquer jogador (inclui bots e eu próprio)
+// Recebe jogada de outro jogador
 socket.on("atualizar-jogada", ({ jogadorIndex, carta }) => {
-  jogarCartaLocal(jogadorIndex, carta); // aplica sempre via eco
+  if (jogadorIndex !== meuIndex) {
+    attemptPlayCardOriginal(jogadorIndex, carta); // aplica só se não for eu
+  }
 });
 
 // ================= FUNÇÕES =================
 
 // Enviar jogada do jogador local
 function enviarJogada(playerIndex, cardIndex) {
-  socket.emit("jogada", { salaId: minhaSala, jogadorIndex: playerIndex, carta: cardIndex });
+  socket.emit("jogada", {
+    salaId: minhaSala,
+    jogadorIndex: playerIndex,
+    carta: cardIndex,
+  });
 }
 
 // Sinalizar que estou pronto
 btnPronto.onclick = () => {
   socket.emit("pronto", { salaId: minhaSala });
   btnPronto.disabled = true;
+};
+
+// ================= PATCH attemptPlayCard =================
+// Guardar versão original
+const attemptPlayCardOriginal = attemptPlayCard;
+
+// Substituir por override híbrido
+attemptPlayCard = function (playerIndex, cardIndex) {
+  if (tiposJogador[playerIndex] === "humano" && playerIndex === meuIndex) {
+    // envia jogada
+    enviarJogada(playerIndex, cardIndex);
+  }
+  // aplica sempre localmente
+  attemptPlayCardOriginal(playerIndex, cardIndex);
 };
