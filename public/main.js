@@ -138,13 +138,10 @@ function renderHands() {
 function attemptPlayCard(playerIndex, cardIndex) {
   if (playerIndex !== currentTurn) return;
 
-  if (onlineGame) {
-    enviarJogada(playerIndex, cardIndex);
-    return; // não aplica localmente
-  }
-
+  // Sempre aplica localmente
   jogarCartaLocal(playerIndex, cardIndex);
 }
+
 
 
 
