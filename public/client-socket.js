@@ -1,19 +1,12 @@
 // ================= SOCKET CLIENT =================
 const socket = io(); // conecta automaticamente ao servidor
 
-// ===== Debug ONLINE =====
-const DEBUG_ONLINE = true;
-function debugOnline(...args) {
-  if (DEBUG_ONLINE) console.log("[ONLINE]", ...args);
-}
-
 // DOM
 const btnEntrarSala = document.getElementById("btn-entrar-sala");
 const btnPronto = document.getElementById("btn-pronto");
 const nomeInput = document.getElementById("nome-jogador");
 const salaInput = document.getElementById("sala-id");
 const listaJogadores = document.getElementById("lista-jogadores");
-const btnReplay = document.getElementById("btn-replay"); // 🚀 botão do modal fim de jogo
 
 // Variáveis
 let minhaSala = "";
@@ -43,33 +36,23 @@ btnEntrarSala.onclick = () => {
 
 // ================= EVENTOS =================
 
-// Atualiza lista de jogadores na sala e no fim de jogo
+// Atualiza lista de jogadores na sala
 socket.on("atualizar-jogadores", (jogadores) => {
-  const html = "<strong>Jogadores na sala:</strong><br>" +
+  listaJogadores.innerHTML = "<strong>Jogadores na sala:</strong><br>" +
     jogadores.map(j => {
-      let tags = j.nome;
-      if (j.pronto) tags += " (pronto)";
-      if (j.replay) tags += " (replay)";
-      if (j.nome === meuNome) tags += " ← Tu (J" + (j.index + 1) + ")";
-      return tags;
+      let tag = j.nome + (j.pronto ? " (pronto)" : "");
+      if (j.nome === meuNome) tag += " ← Tu (J" + (j.index + 1) + ")";
+      return tag;
     }).join("<br>");
-
-  // Atualiza no lobby
-  listaJogadores.innerHTML = html;
-
-  // Atualiza no modal de fim de jogo (se existir o elemento)
-  const fimLista = document.getElementById("fim-lista-jogadores");
-  if (fimLista) fimLista.innerHTML = html;
 
   // Atualiza meuIndex
   const jogador = jogadores.find(j => j.nome === meuNome);
   if (jogador) meuIndex = jogador.index;
 });
 
-// Quando todos os jogadores estão prontos ou pedem replay → iniciar jogo
-socket.on("iniciar-jogo", ({ nomesJogadores, hands: serverHands, trunfo: serverTrunfo, jogadorComTrunfo: serverTrunfoPlayer, turno }) => {
-  debugOnline("Novo jogo iniciado! (via servidor)");
 
+// Quando todos os jogadores estão prontos, iniciar jogo
+socket.on("iniciar-jogo", ({ nomesJogadores, hands: serverHands, trunfo: serverTrunfo, jogadorComTrunfo: serverTrunfoPlayer, turno }) => {
   // Configura tipos de jogadores
   tiposJogador = ["computador","computador","computador","computador"];
   nomesJogadores.forEach((nome,i) => tiposJogador[i] = "humano");
@@ -80,10 +63,6 @@ socket.on("iniciar-jogo", ({ nomesJogadores, hands: serverHands, trunfo: serverT
   jogadorComTrunfo = serverTrunfoPlayer;
   currentTurn = turno;
 
-  // Esconde modal de fim de jogo (se estava aberto)
-  const modal = document.getElementById("fim-jogo-modal");
-  if (modal) modal.classList.add("hidden");
-
   document.getElementById("game").style.display = "block";
   renderHands();
   atualizarTrunfoLabel();
@@ -91,7 +70,6 @@ socket.on("iniciar-jogo", ({ nomesJogadores, hands: serverHands, trunfo: serverT
 
 // Recebe jogada de outro jogador
 socket.on("atualizar-jogada", ({ jogadorIndex, carta }) => {
-  debugOnline(`Jogador ${jogadorIndex+1} jogou`);
   if (jogadorIndex !== meuIndex) {
     attemptPlayCard(jogadorIndex, carta);
   }
@@ -106,19 +84,9 @@ function enviarJogada(playerIndex, cardIndex) {
 
 // Sinalizar que estou pronto
 btnPronto.onclick = () => {
-  debugOnline(`${meuIndex+1 || "?"} clicou pronto`);
   socket.emit("pronto", { salaId: minhaSala });
   btnPronto.disabled = true;
 };
-
-// 🚀 Sinalizar que quero Replay
-if (btnReplay) {
-  btnReplay.onclick = () => {
-    debugOnline(`${meuIndex+1 || "?"} pediu replay`);
-    socket.emit("replay", { salaId: minhaSala });
-    btnReplay.disabled = true; // evita clique duplo
-  };
-}
 
 // Substituir attemptPlayCard para multiplayer online
 const attemptPlayCardOriginal = attemptPlayCard;

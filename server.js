@@ -41,7 +41,7 @@ io.on("connection", (socket) => {
     }
 
     const jogadorIndex = sala.players.length;
-    sala.players.push({ id: socket.id, nome, pronto: false, replay: false, index: jogadorIndex });
+    sala.players.push({ id: socket.id, nome, pronto: false, index: jogadorIndex });
     socket.join(salaId);
 
     console.log(`${nome} entrou na sala ${salaId} (J${jogadorIndex+1})`);
@@ -60,6 +60,7 @@ io.on("connection", (socket) => {
 
     // Se todos prontos e pelo menos 2 jogadores
     if (sala.players.length >= 2 && sala.players.every(p => p.pronto)) {
+      // Criar baralho e distribuir cartas
       const deck = criarDeckEmbaralhado();
 
       sala.estadoDoJogo = {
@@ -78,52 +79,7 @@ io.on("connection", (socket) => {
         rondaAtual: 1
       };
 
-      // Reset flags de pronto
-      sala.players.forEach(p => p.pronto = false);
-
-      io.to(salaId).emit("iniciar-jogo", {
-        nomesJogadores: sala.players.map(p => p.nome),
-        hands: sala.estadoDoJogo.hands,
-        trunfo: sala.estadoDoJogo.trunfo,
-        jogadorComTrunfo: sala.estadoDoJogo.jogadorComTrunfo,
-        turno: sala.estadoDoJogo.turno
-      });
-    }
-  });
-
-  // 🚀 Jogador pede Replay
-  socket.on("replay", ({ salaId }) => {
-    const sala = salas[salaId];
-    if (!sala) return;
-
-    const player = sala.players.find(p => p.id === socket.id);
-    if (player) player.replay = true;
-
-    io.to(salaId).emit("atualizar-jogadores", sala.players);
-
-    // Se todos confirmaram Replay
-    if (sala.players.length >= 2 && sala.players.every(p => p.replay)) {
-      const deck = criarDeckEmbaralhado();
-
-      sala.estadoDoJogo = {
-        turno: 0,
-        trunfo: deck[0],
-        jogadorComTrunfo: 0,
-        hands: [
-          deck.slice(0,10),
-          deck.slice(10,20),
-          deck.slice(20,30),
-          deck.slice(30,40)
-        ],
-        cardsOnTable: [],
-        lixoEquipa1: [],
-        lixoEquipa2: [],
-        rondaAtual: 1
-      };
-
-      // Reset flags de replay
-      sala.players.forEach(p => p.replay = false);
-
+      // Emitir estado do jogo para todos os clientes
       io.to(salaId).emit("iniciar-jogo", {
         nomesJogadores: sala.players.map(p => p.nome),
         hands: sala.estadoDoJogo.hands,
@@ -138,6 +94,8 @@ io.on("connection", (socket) => {
   socket.on("jogada", ({ salaId, jogadorIndex, carta }) => {
     const sala = salas[salaId];
     if (!sala || !sala.estadoDoJogo) return;
+
+    // Envia a jogada para todos os jogadores da sala
     io.to(salaId).emit("atualizar-jogada", { jogadorIndex, carta });
   });
 
