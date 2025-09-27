@@ -18,71 +18,60 @@ document.addEventListener("DOMContentLoaded", () => {
   // Elementos programador
   const btnStartDev = document.getElementById("btn-start-dev");
 
-  // Botões de modo
+  // Mostrar configs extra se existirem
   modoButtons.forEach(btn => {
     btn.addEventListener("click", () => {
       const modo = btn.dataset.modo;
       configs.forEach(c => c.style.display = "none"); // esconde todas configs
-      // Mostra config correspondente
+
       if (modo === "single") document.getElementById("config-single").style.display = "block";
       else if (modo === "online") document.getElementById("config-online").style.display = "block";
       else if (modo === "local") document.getElementById("config-local").style.display = "block";
       else if (modo === "programador") document.getElementById("config-programador").style.display = "block";
+
+      // Cria config logo ao clicar (1 clique só)
+      let config = null;
+
+      if (modo === "single") {
+        config = {
+          modo: "single",
+          jogadores: [
+            { tipo: "humano" },
+            { tipo: "computador" },
+            { tipo: "computador" },
+            { tipo: "computador" }
+          ],
+          baralhador: 0
+        };
+      } else if (modo === "local") {
+        config = {
+          modo: "local",
+          jogadores: [
+            { tipo: "humano" },
+            { tipo: "humano" },
+            { tipo: "humano" },
+            { tipo: "humano" }
+          ],
+          baralhador: 1
+        };
+      } else if (modo === "programador") {
+        config = {
+          modo: "programador",
+          jogadores: [
+            { tipo: "computador" },
+            { tipo: "computador" },
+            { tipo: "computador" },
+            { tipo: "computador" }
+          ],
+          baralhador: 2
+        };
+      } else if (modo === "online") {
+        config = { modo: "online" };
+      }
+
+      if (config) {
+        window.dispatchEvent(new CustomEvent("iniciarJogo", { detail: config }));
+      }
     });
   });
-
-  // --- Singleplayer ---
-  document.querySelector("#btn-single").addEventListener("click", () => {
-    const config = {
-      modo: "single",
-      jogadores: [
-        { tipo: "humano" },
-        { tipo: "computador" },
-        { tipo: "computador" },
-        { tipo: "computador" }
-      ],
-      baralhador: 0
-    };
-
-    window.dispatchEvent(new CustomEvent("iniciarJogo", { detail: config }));
-  });
-
-  // --- Local ---
-  document.querySelector("#btn-local").addEventListener("click", () => {
-    const config = {
-      modo: "local",
-      jogadores: [
-        { tipo: "humano" },
-        { tipo: "humano" },
-        { tipo: "humano" },
-        { tipo: "humano" }
-      ],
-      baralhador: 1
-    };
-
-    window.dispatchEvent(new CustomEvent("iniciarJogo", { detail: config }));
-  });
-
-  // --- Programador ---
-  document.querySelector("#btn-programador").addEventListener("click", () => {
-    const config = {
-      modo: "programador",
-      jogadores: [
-        { tipo: "computador" },
-        { tipo: "computador" },
-        { tipo: "computador" },
-        { tipo: "computador" }
-      ],
-      baralhador: 2
-    };
-
-    window.dispatchEvent(new CustomEvent("iniciarJogo", { detail: config }));
-  });
-
-  // --- Online ---
-  document.querySelector("#btn-online").addEventListener("click", () => {
-    const config = { modo: "online" };
-    window.dispatchEvent(new CustomEvent("iniciarJogo", { detail: config }));
-  });
-
 });
