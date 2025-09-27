@@ -178,9 +178,21 @@ function proximoTurno() {
   currentTurn = (currentTurn + 1) % 4;
   renderHands();
 
-  if (!onlineGame && tiposJogador[currentTurn] === "computador") {
-    setTimeout(() => jogadaComputador(currentTurn), 500);
+  if (tiposJogador[currentTurn] === "computador") {
+    setTimeout(() => {
+      if (onlineGame) {
+        // IA só devolve o índice
+        const cardIndex = escolherCartaIA(currentTurn);
+        // Envia e aplica já localmente
+        enviarJogada(currentTurn, cardIndex);
+        jogarCartaLocal(currentTurn, cardIndex);
+      } else {
+        jogadaComputador(currentTurn);
+      }
+    }, 500);
   }
+
+
 }
 
 // ---------- resolver ronda ----------
@@ -240,9 +252,19 @@ function resolveRound() {
       return;
     }
 
-    if (!onlineGame && tiposJogador[currentTurn] === "computador") {
-      setTimeout(() => jogadaComputador(currentTurn), 500);
+    if (tiposJogador[currentTurn] === "computador") {
+      setTimeout(() => {
+        if (onlineGame) {
+          const cardIndex = escolherCartaIA(currentTurn);
+          enviarJogada(currentTurn, cardIndex);
+          jogarCartaLocal(currentTurn, cardIndex);
+        } else {
+          jogadaComputador(currentTurn);
+        }
+      }, 500);
     }
+
+
   }
 
   const timer = setTimeout(continueRound, 3000);
@@ -390,9 +412,18 @@ function iniciarNovoJogo() {
   renderHands();
   atualizarTrunfoLabel();
 
-  if (!onlineGame && tiposJogador[currentTurn] === "computador") {
-    setTimeout(() => jogadaComputador(currentTurn), 500);
+  if (tiposJogador[currentTurn] === "computador") {
+    setTimeout(() => {
+      if (onlineGame) {
+        const cardIndex = escolherCartaIA(currentTurn);
+        enviarJogada(currentTurn, cardIndex);
+        jogarCartaLocal(currentTurn, cardIndex);
+      } else {
+        jogadaComputador(currentTurn);
+      }
+    }, 500);
   }
+
 
   baralhadorAtual = (baralhadorAtual + 1) % 4;
 }
