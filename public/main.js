@@ -338,6 +338,10 @@ function startGame(config) {
   console.log("=== Iniciando Jogo ===");
   console.log("Config recebida:", config);
 
+  // 👉 Trocar a UI para o jogo
+  document.getElementById("menu-inicial").style.display = "none";
+  document.getElementById("game").style.display = "block";
+
   modoJogo = config.modo;
   tiposJogador = config.jogadores.map(j => j.tipo);
   baralhadorAtual = config.baralhador;
@@ -357,6 +361,7 @@ function startGame(config) {
 
   iniciarNovoJogo();
 }
+
 
 function iniciarNovoJogo() {
   if (modoJogo === "single") meuIndex = 0;
