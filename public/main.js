@@ -139,14 +139,17 @@ function attemptPlayCard(playerIndex, cardIndex) {
   if (playerIndex !== currentTurn) return;
 
   if (onlineGame) {
-    // 🚀 online: apenas envia jogada ao servidor
+    // 🚀 envia ao servidor
     enviarJogada(playerIndex, cardIndex);
+    // 🚀 aplica já localmente
+    jogarCartaLocal(playerIndex, cardIndex);
     return;
   }
 
   // offline: lógica local
   jogarCartaLocal(playerIndex, cardIndex);
 }
+
 
 function jogarCartaLocal(playerIndex, cardIndex) {
   const leadingSuit = cardsOnTable.length > 0 ? cardsOnTable[0].card.naipe : null;
