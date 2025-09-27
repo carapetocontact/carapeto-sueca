@@ -3,7 +3,7 @@ const socket = io(); // conecta automaticamente ao servidor
 
 // Debug helper
 const DEBUG_SALA = true;
-function debugLog(...args) {
+function debugLogSALA(...args) {
   if (DEBUG_SALA) console.log("[SALA]", ...args);
 }
 
@@ -42,7 +42,7 @@ btnEntrarSala.onclick = () => {
     return;
   }
 
-  debugLog("Tentando entrar na sala", minhaSala, "com nome", meuNome);
+  debugLogSALA("Tentando entrar na sala", minhaSala, "com nome", meuNome);
   socket.emit("entrar-sala", { nome: meuNome, salaId: minhaSala });
 
   // Trocar UI: esconder config-online, mostrar lobby
@@ -53,14 +53,14 @@ btnEntrarSala.onclick = () => {
 
 // Botão PRONTO no lobby
 btnProntoLobby.onclick = () => {
-  debugLog("Jogador clicou PRONTO");
+  debugLogSALA("Jogador clicou PRONTO");
   socket.emit("pronto", { salaId: minhaSala });
   btnProntoLobby.disabled = true;
 };
 
 // Botão VOLTAR MENU
 btnVoltarMenu.onclick = () => {
-  debugLog("Jogador saiu para o menu");
+  debugLogSALA("Jogador saiu para o menu");
   salaDiv.style.display = "none";
   document.getElementById("menu-inicial").style.display = "block";
   socket.disconnect(); // podes depois trocar por socket.emit("sair-sala")
@@ -70,7 +70,7 @@ btnVoltarMenu.onclick = () => {
 
 // Atualiza lista de jogadores no lobby
 socket.on("atualizar-jogadores", (jogadores) => {
-  debugLog("Recebi atualizar-jogadores:", jogadores);
+  debugLogSALA("Recebi atualizar-jogadores:", jogadores);
 
   // Reset dos slots
   lobbyJogadores.j1.textContent = "J1 - (vazio)";
@@ -90,13 +90,13 @@ socket.on("atualizar-jogadores", (jogadores) => {
   const jogador = jogadores.find(j => j.nome === meuNome);
   if (jogador) {
     meuIndex = jogador.index;
-    debugLog("Meu index atualizado:", meuIndex);
+    debugLogSALA("Meu index atualizado:", meuIndex);
   }
 });
 
 // Quando todos estão prontos → iniciar jogo
 socket.on("iniciar-jogo", (dados) => {
-  debugLog("Recebi iniciar-jogo:", dados);
+  debugLogSALA("Recebi iniciar-jogo:", dados);
 
   const config = {
     modo: "online",
@@ -112,7 +112,7 @@ socket.on("iniciar-jogo", (dados) => {
   const eu = dados.jogadores.find(j => j.nome === meuNome);
   if (eu) {
     meuIndex = eu.index;
-    debugLog("Meu index final:", meuIndex);
+    debugLogSALA("Meu index final:", meuIndex);
   }
 
   // Esconde lobby e mostra jogo
@@ -124,7 +124,7 @@ socket.on("iniciar-jogo", (dados) => {
 
 // Recebe jogada de outro jogador
 socket.on("atualizar-jogada", ({ jogadorIndex, carta }) => {
-  debugLog("Recebi jogada:", jogadorIndex, carta);
+  debugLogSALA("Recebi jogada:", jogadorIndex, carta);
   if (jogadorIndex !== meuIndex) {
     jogarCartaLocal(jogadorIndex, carta);
   }
@@ -134,7 +134,7 @@ socket.on("atualizar-jogada", ({ jogadorIndex, carta }) => {
 
 // Enviar jogada do jogador local
 function enviarJogada(playerIndex, cardIndex) {
-  debugLog("Enviei jogada:", playerIndex, cardIndex);
+  debugLogSALA("Enviei jogada:", playerIndex, cardIndex);
   socket.emit("jogada", { salaId: minhaSala, jogadorIndex: playerIndex, carta: cardIndex });
 }
 

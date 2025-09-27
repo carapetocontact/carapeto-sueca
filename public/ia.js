@@ -1,7 +1,7 @@
 // ===== IA para Sueca com debug aprimorado =====
 const DEBUG_IA = true;
 
-function debugLog(...args) {
+function debugLogIA(...args) {
   if (DEBUG_IA) console.log("[IA]", ...args);
 }
 
@@ -10,8 +10,8 @@ function escolherCartaIA(playerIndex) {
   const hand = hands[playerIndex];
   const leadingSuit = cardsOnTable.length > 0 ? cardsOnTable[0].card.naipe : null;
 
-  debugLog(`Jogador ${playerIndex+1} está a jogar. Mão:`, hand.map(c => c.valor+c.naipe).join(", "));
-  debugLog("Mesa antes da jogada:", cardsOnTable.map(c => c.card.valor+c.card.naipe).join(", "));
+  debugLogIA(`Jogador ${playerIndex+1} está a jogar. Mão:`, hand.map(c => c.valor+c.naipe).join(", "));
+  debugLogIA("Mesa antes da jogada:", cardsOnTable.map(c => c.card.valor+c.card.naipe).join(", "));
 
   // 1️⃣ Determinar se tem que assistir ou pode cortar
   const temLeadingSuit = hand.some(c => c.naipe === leadingSuit);
@@ -34,14 +34,14 @@ function escolherCartaIA(playerIndex) {
 
   if (temLeadingSuit) {
     temQueAssistir = cartasValidas.map(c => c.valor+c.naipe);
-    debugLog(`Jogador ${playerIndex+1} tem que assistir com: [${temQueAssistir.join(", ")}]`);
+    debugLogIA(`Jogador ${playerIndex+1} tem que assistir com: [${temQueAssistir.join(", ")}]`);
   } else if (leadingSuit) {
     podeCortar = hand.filter(c => c.naipe === trunfo.naipe).map(c => c.valor+c.naipe);
     if (podeCortar.length > 0)
-      debugLog(`Jogador ${playerIndex+1} pode cortar com: [${podeCortar.join(", ")}]`);
+      debugLogIA(`Jogador ${playerIndex+1} pode cortar com: [${podeCortar.join(", ")}]`);
   }
 
-  debugLog("Cartas válidas:", cartasValidas.map(c => c.valor+c.naipe).join(", "));
+  debugLogIA("Cartas válidas:", cartasValidas.map(c => c.valor+c.naipe).join(", "));
 
   // 2️⃣ Prioridade Ás
   cartasValidas = cartasValidas.map(c => {
@@ -51,7 +51,7 @@ function escolherCartaIA(playerIndex) {
         .some(t => (t.card?.naipe === c.naipe) || (t.naipe === c.naipe));
       if (!saiuNaipe) {
         c._prioridade = 2;
-        debugLog(`Ás de ${c.naipe} marcado com prioridade porque ainda não saiu este naipe.`);
+        debugLogIA(`Ás de ${c.naipe} marcado com prioridade porque ainda não saiu este naipe.`);
       }
     }
     return c;
@@ -67,7 +67,7 @@ function escolherCartaIA(playerIndex) {
 
       if (!(ultimaCarta || unicaCarta || asSaiu)) {
         c._prioridade = -5; // desmotiva a escolha do 7
-        debugLog(`Evitar jogar o 7 de ${c.naipe} porque o Ás ainda não saiu.`);
+        debugLogIA(`Evitar jogar o 7 de ${c.naipe} porque o Ás ainda não saiu.`);
       }
     }
     return c;
@@ -114,10 +114,10 @@ function escolherCartaIA(playerIndex) {
 
     if (equipaWinner === equipa) {
       cartasGanham.push(c);
-      debugLog(`Se jogar ${c.valor+c.naipe} => GANHA`);
+      debugLogIA(`Se jogar ${c.valor+c.naipe} => GANHA`);
     } else {
       cartasPerdem.push(c);
-      debugLog(`Se jogar ${c.valor+c.naipe} => PERDE`);
+      debugLogIA(`Se jogar ${c.valor+c.naipe} => PERDE`);
     }
   }
 
@@ -138,7 +138,7 @@ function escolherCartaIA(playerIndex) {
     }, cartasPerdem[0]);
   }
 
-  debugLog("Carta escolhida:", cartaEscolhida.valor+cartaEscolhida.naipe);
+  debugLogIA("Carta escolhida:", cartaEscolhida.valor+cartaEscolhida.naipe);
   return hand.indexOf(cartaEscolhida);
 }
 
