@@ -35,14 +35,17 @@
 
     <!-- Online -->
     <div id="config-online" class="config-modo" style="display:none;">
+      <h2>Entrar Online</h2>
+
       <label for="nome-jogador">Nome:</label>
       <input type="text" id="nome-jogador" placeholder="Teu nome">
+
       <label for="sala-id">ID da Sala:</label>
-      <input type="text" id="sala-id" placeholder="ex: sala1">
+      <input type="text" id="sala-id" placeholder="ex: 1">
+
       <button id="btn-entrar-sala">Entrar na Sala</button>
-      <button id="btn-pronto" disabled>Pronto</button>
-      <div id="lista-jogadores"></div>
     </div>
+
 
     <!-- Multiplayer Local -->
     <div id="config-local" class="config-modo" style="display:none;">
@@ -62,6 +65,21 @@
 
   </div>
 
+  <!-- SALA / LOBBY-->
+  <div id="sala" style="display:none;">
+    <h2 id="sala-nome">Sala: ???</h2>
+
+    <div id="jogadores-lobby">
+      <p id="j1">J1 - (vazio)</p>
+      <p id="j2">J2 - (vazio)</p>
+      <p id="j3">J3 - (vazio)</p>
+      <p id="j4">J4 - (vazio)</p>
+    </div>
+
+    <button id="btn-pronto-lobby">✅ Pronto</button>
+    <button id="btn-voltar-menu">🏠 Sair</button>
+  </div>
+  
   <!-- ===== JOGO (escondido no início) ===== -->
   <div id="game" style="display:none;">
     <header><h1>Sueca</h1></header>
