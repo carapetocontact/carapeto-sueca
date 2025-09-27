@@ -50,22 +50,19 @@ socket.on("atualizar-jogadores", (jogadores) => {
   if (jogador) meuIndex = jogador.index;
 });
 
-
 // Quando todos os jogadores estão prontos, iniciar jogo
-socket.on("iniciar-jogo", ({ nomesJogadores, hands: serverHands, trunfo: serverTrunfo, jogadorComTrunfo: serverTrunfoPlayer, turno }) => {
-  // Configura tipos de jogadores
-  tiposJogador = ["computador","computador","computador","computador"];
-  nomesJogadores.forEach((nome,i) => tiposJogador[i] = "humano");
+socket.on("iniciar-jogo", (dados) => {
+  const config = {
+    modo: "online",
+    jogadores: dados.jogadores,
+    baralhador: dados.baralhador,
+    hands: dados.hands,
+    trunfo: dados.trunfo,
+    jogadorComTrunfo: dados.jogadorComTrunfo,
+    turno: dados.turno
+  };
 
-  // Atualiza estado do jogo com dados do servidor
-  hands = serverHands;
-  trunfo = serverTrunfo;
-  jogadorComTrunfo = serverTrunfoPlayer;
-  currentTurn = turno;
-
-  document.getElementById("game").style.display = "block";
-  renderHands();
-  atualizarTrunfoLabel();
+  window.dispatchEvent(new CustomEvent("iniciarJogo", { detail: config }));
 });
 
 // Recebe jogada de outro jogador
@@ -86,13 +83,4 @@ function enviarJogada(playerIndex, cardIndex) {
 btnPronto.onclick = () => {
   socket.emit("pronto", { salaId: minhaSala });
   btnPronto.disabled = true;
-};
-
-// Substituir attemptPlayCard para multiplayer online
-const attemptPlayCardOriginal = attemptPlayCard;
-attemptPlayCard = function(playerIndex, cardIndex) {
-  if (tiposJogador[playerIndex] === "humano" && playerIndex === meuIndex) {
-    enviarJogada(playerIndex, cardIndex);
-  }
-  attemptPlayCardOriginal(playerIndex, cardIndex);
 };

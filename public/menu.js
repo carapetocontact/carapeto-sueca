@@ -31,33 +31,58 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   });
 
-  // Iniciar Singleplayer
-  btnStartSingle.addEventListener("click", () => {
-    const baralhador = Number(selectBaralhadorSingle.value);
-    const tipos = ["humano", "computador", "computador", "computador"];
-    iniciarJogo("single", tipos, baralhador);
+  // --- Singleplayer ---
+  document.querySelector("#btn-single").addEventListener("click", () => {
+    const config = {
+      modo: "single",
+      jogadores: [
+        { tipo: "humano" },
+        { tipo: "computador" },
+        { tipo: "computador" },
+        { tipo: "computador" }
+      ],
+      baralhador: 0
+    };
+
+    window.dispatchEvent(new CustomEvent("iniciarJogo", { detail: config }));
   });
 
-  // Iniciar Multiplayer Local
-  btnStartLocal.addEventListener("click", () => {
-    const numPlayers = Number(selectLocalPlayers.value);
-    const tipos = [];
-    for (let i = 0; i < 4; i++) {
-      tipos.push(i < numPlayers ? "humano" : "computador");
-    }
-    iniciarJogo("local", tipos, 0); // 0 = baralhador padrão
+  // --- Local ---
+  document.querySelector("#btn-local").addEventListener("click", () => {
+    const config = {
+      modo: "local",
+      jogadores: [
+        { tipo: "humano" },
+        { tipo: "humano" },
+        { tipo: "humano" },
+        { tipo: "humano" }
+      ],
+      baralhador: 1
+    };
+
+    window.dispatchEvent(new CustomEvent("iniciarJogo", { detail: config }));
   });
 
-  // Iniciar Modo Programador
-  btnStartDev.addEventListener("click", () => {
-    const tipos = ["computador","computador","computador","computador"];
-    iniciarJogo("programador", tipos, 0);
+  // --- Programador ---
+  document.querySelector("#btn-programador").addEventListener("click", () => {
+    const config = {
+      modo: "programador",
+      jogadores: [
+        { tipo: "computador" },
+        { tipo: "computador" },
+        { tipo: "computador" },
+        { tipo: "computador" }
+      ],
+      baralhador: 2
+    };
+
+    window.dispatchEvent(new CustomEvent("iniciarJogo", { detail: config }));
   });
 
-  // Função comum para iniciar o jogo
-  function iniciarJogo(modo, tipos, baralhador) {
-    menuInicial.style.display = "none";
-    gameDiv.style.display = "block";
-    startGame(modo, tipos, baralhador); // função do main.js
-  }
+  // --- Online ---
+  document.querySelector("#btn-online").addEventListener("click", () => {
+    const config = { modo: "online" };
+    window.dispatchEvent(new CustomEvent("iniciarJogo", { detail: config }));
+  });
+
 });

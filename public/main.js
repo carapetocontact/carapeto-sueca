@@ -66,6 +66,20 @@ function atualizarTrunfoLabel() {
   }
 }
 
+
+// Escuta o evento disparado pelo menu ou pelo socket
+window.addEventListener("iniciarJogo", (e) => {
+  const config = e.detail;
+
+  if (config.modo === "online" && !config.hands) {
+    // Online ainda não tem dados completos (espera pelo servidor)
+    console.log("Modo online escolhido, à espera do servidor...");
+    return;
+  }
+
+  startGame(config);
+});
+
 // ---------- render mãos ----------
 function renderHands() {
   document.getElementById('maos').style.flexDirection = 'row';
@@ -318,11 +332,34 @@ function finalizarJogo() {
   };
 }
 
+// ---------- iniciar jogo ----------
+function startGame(config) {
+  console.clear();
+  console.log("=== Iniciando Jogo ===");
+  console.log("Config recebida:", config);
 
-// ---------- iniciar novo jogo ----------
+  modoJogo = config.modo;
+  tiposJogador = config.jogadores.map(j => j.tipo);
+  baralhadorAtual = config.baralhador;
+  onlineGame = (modoJogo === "online");
+
+  if (modoJogo === "online") {
+    hands = config.hands;
+    trunfo = config.trunfo;
+    jogadorComTrunfo = config.jogadorComTrunfo;
+    currentTurn = config.turno;
+
+    renderHands();
+    atualizarTrunfoLabel();
+    updatePointsUI();
+    return;
+  }
+
+  iniciarNovoJogo();
+}
+
 function iniciarNovoJogo() {
-  // Define índice do jogador local se singleplayer
-  if (modoJogo === "singleplayer") meuIndex = 0;
+  if (modoJogo === "single") meuIndex = 0;
 
   const deck = embaralhar(criarBaralho());
 
@@ -332,7 +369,7 @@ function iniciarNovoJogo() {
   cardsOnTable = [];
   rondaAtual = 1;
 
-  currentTurn = (baralhadorAtual + 3) % 4; // jogador à direita do baralhador
+  currentTurn = (baralhadorAtual + 3) % 4;
   jogadorComTrunfo = baralhadorAtual;
   trunfo = deck[0];
 
@@ -340,7 +377,6 @@ function iniciarNovoJogo() {
     hands[i] = deck.slice(i * 10, (i + 1) * 10);
   }
 
-  // 🚀 Certifica-se de que meuIndex está definido antes de renderizar
   if (meuIndex === null) meuIndex = 0;
 
   renderHands();
@@ -353,47 +389,7 @@ function iniciarNovoJogo() {
   baralhadorAtual = (baralhadorAtual + 1) % 4;
 }
 
-// ---------- start game ----------
-function startGame(modo, tipos, baralhador, estadoServidor = null) {
-  modoJogo = modo;
-  tiposJogador = tipos;
-  document.getElementById("game").style.display = "block";
 
-  if (modoJogo === "singleplayer") {
-    meuIndex = 0;
-    onlineGame = false;
-  } else if (modoJogo === "online") {
-    onlineGame = true;
-    // meuIndex será definido pelo servidor
-  }
-
-  jogadorHumano = tiposJogador.indexOf("humano");
-  jogadoresComputador = tiposJogador
-    .map((t, i) => (t === "computador" ? i : -1))
-    .filter(i => i !== -1);
-
-  if (modo === "online" && estadoServidor) {
-    hands = estadoServidor.hands;
-    trunfo = estadoServidor.trunfo;
-    jogadorComTrunfo = estadoServidor.jogadorComTrunfo;
-    currentTurn = estadoServidor.currentTurn;
-    baralhadorAtual = estadoServidor.baralhadorAtual;
-    lixoEquipa1 = [];
-    lixoEquipa2 = [];
-    cardsOnTable = [];
-
-    // 🚀 Se meuIndex não foi setado, pega do estado do servidor
-    if (meuIndex === null && estadoServidor.meuIndex !== undefined) {
-      meuIndex = estadoServidor.meuIndex;
-    }
-
-    renderHands();
-    atualizarTrunfoLabel();
-  } else {
-    baralhadorAtual = baralhador;
-    iniciarNovoJogo();
-  }
-}
 
 
 
