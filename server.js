@@ -58,8 +58,21 @@ io.on("connection", (socket) => {
 
     io.to(salaId).emit("atualizar-jogadores", sala.players);
 
-    // Se todos prontos e pelo menos 2 jogadores
+    // Se todos prontos e pelo menos 2 jogadores humanos
     if (sala.players.length >= 2 && sala.players.every(p => p.pronto)) {
+      // Preencher com bots até 4 jogadores
+      if (sala.players.length < 4) {
+        for (let i = sala.players.length; i < 4; i++) {
+          sala.players.push({
+            id: "bot" + i,
+            nome: "Bot" + (i + 1),
+            pronto: true,
+            index: i,
+            tipo: "computador"
+          });
+        }
+      }
+
       // Criar baralho e distribuir cartas
       const deck = criarDeckEmbaralhado();
 
@@ -81,7 +94,12 @@ io.on("connection", (socket) => {
 
       // Emitir estado do jogo para todos os clientes
       io.to(salaId).emit("iniciar-jogo", {
-        nomesJogadores: sala.players.map(p => p.nome),
+        jogadores: sala.players.map(p => ({
+          nome: p.nome,
+          tipo: p.tipo || "humano", // se não tiver tipo, assume humano
+          index: p.index
+        })),
+        baralhador: 0, // podes mudar para rodar/aleatório se quiseres
         hands: sala.estadoDoJogo.hands,
         trunfo: sala.estadoDoJogo.trunfo,
         jogadorComTrunfo: sala.estadoDoJogo.jogadorComTrunfo,
@@ -89,6 +107,7 @@ io.on("connection", (socket) => {
       });
     }
   });
+
 
   // Receber jogada
   socket.on("jogada", ({ salaId, jogadorIndex, carta }) => {
