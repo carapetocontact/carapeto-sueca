@@ -1,0 +1,75 @@
+/* ================= SALA / LOBBY ================= */
+
+#sala {
+  display: none; /* escondido por default */
+  max-width: 500px;
+  margin: 50px auto;
+  padding: 20px;
+  background: #1e1e2f;
+  color: #f0f0f0;
+  border-radius: 12px;
+  box-shadow: 0 0 15px rgba(0,0,0,0.4);
+  text-align: center;
+  font-family: Arial, sans-serif;
+}
+
+#sala h2 {
+  margin-bottom: 20px;
+  font-size: 1.6rem;
+  color: #00ffcc;
+}
+
+/* Lista de jogadores */
+#jogadores-lobby {
+  margin: 20px 0;
+  text-align: left;
+  padding: 15px;
+  background: #2a2a3d;
+  border-radius: 8px;
+  box-shadow: inset 0 0 10px rgba(0,0,0,0.3);
+}
+
+#jogadores-lobby p {
+  margin: 10px 0;
+  padding: 8px 12px;
+  border-radius: 6px;
+  background: #33334d;
+  font-size: 1.1rem;
+  transition: background 0.3s;
+}
+
+#jogadores-lobby p:hover {
+  background: #444466;
+}
+
+/* Botões */
+#btn-pronto-lobby,
+#btn-voltar-menu {
+  margin: 10px;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 1rem;
+  transition: transform 0.2s, background 0.2s;
+}
+
+#btn-pronto-lobby {
+  background: #00cc66;
+  color: white;
+}
+
+#btn-pronto-lobby:hover {
+  background: #00e67a;
+  transform: scale(1.05);
+}
+
+#btn-voltar-menu {
+  background: #cc0033;
+  color: white;
+}
+
+#btn-voltar-menu:hover {
+  background: #e60039;
+  transform: scale(1.05);
+}

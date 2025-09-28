@@ -64,10 +64,9 @@ document.addEventListener("DOMContentLoaded", () => {
       } else if (modo === "online") {
         // 👉 fluxo especial do online
         document.getElementById("config-online").style.display = "block";
-        menuInicial.style.display = "none";
-
-        // NÃO chamamos iniciarJogo aqui!
-        // O fluxo segue via client-socket.js (entrar-sala → pronto → iniciar-jogo)
+        // ❌ não escondemos menuInicial aqui
+        // só vamos escondê-lo no client-socket.js,
+        // quando o jogador clicar em "Entrar na Sala"
       }
     });
   });

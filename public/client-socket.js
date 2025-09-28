@@ -45,10 +45,12 @@ btnEntrarSala.onclick = () => {
   debugLogSALA("Tentando entrar na sala", minhaSala, "com nome", meuNome);
   socket.emit("entrar-sala", { nome: meuNome, salaId: minhaSala });
 
-  // Trocar UI: esconder config-online, mostrar lobby
+  // Trocar UI: esconder menu + config-online, mostrar lobby
+  document.getElementById("menu-inicial").style.display = "none";
   document.getElementById("config-online").style.display = "none";
   salaDiv.style.display = "block";
   salaNomeEl.textContent = "Sala: " + minhaSala;
+
 };
 
 // Botão PRONTO no lobby
