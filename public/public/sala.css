@@ -1,0 +1,83 @@
+/* ================= SALA / LOBBY - estilo casino ================= */
+
+#sala {
+  display: none;
+  max-width: 600px;
+  margin: 60px auto;
+  padding: 25px;
+  background: linear-gradient(145deg, #1a1a2e, #16213e);
+  color: #f5f5f5;
+  border-radius: 14px;
+  box-shadow: 0 0 25px rgba(0,0,0,0.8), 0 0 10px rgba(128,0,128,0.5);
+  text-align: center;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  border: 2px solid #b30000; /* detalhe vermelho casino */
+}
+
+#sala h2 {
+  margin-bottom: 25px;
+  font-size: 1.8rem;
+  color: #ffcc00; /* dourado */
+  text-shadow: 0 0 8px rgba(255, 204, 0, 0.8);
+}
+
+/* Lista de jogadores */
+#jogadores-lobby {
+  margin: 20px 0;
+  text-align: left;
+  padding: 15px;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 10px;
+  border: 1px solid rgba(255,255,255,0.1);
+  box-shadow: inset 0 0 12px rgba(0,0,0,0.5);
+}
+
+#jogadores-lobby p {
+  margin: 12px 0;
+  padding: 10px 14px;
+  border-radius: 6px;
+  font-size: 1.15rem;
+  background: linear-gradient(90deg, rgba(255,0,0,0.15), rgba(255,0,0,0));
+  transition: transform 0.2s, background 0.3s;
+}
+
+#jogadores-lobby p:hover {
+  transform: scale(1.03);
+  background: linear-gradient(90deg, rgba(255,0,0,0.3), rgba(255,0,0,0.05));
+}
+
+/* Botões com vibe de casino */
+#btn-pronto-lobby,
+#btn-voltar-menu {
+  margin: 15px;
+  padding: 12px 25px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 1.1rem;
+  font-weight: bold;
+  color: white;
+  letter-spacing: 1px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.6);
+  transition: transform 0.2s, background 0.3s;
+}
+
+#btn-pronto-lobby {
+  background: linear-gradient(145deg, #00b359, #00994d); /* verde fichas */
+  border: 2px solid #00e673;
+}
+
+#btn-pronto-lobby:hover {
+  background: linear-gradient(145deg, #00e673, #00cc66);
+  transform: scale(1.08);
+}
+
+#btn-voltar-menu {
+  background: linear-gradient(145deg, #b30000, #800000); /* vermelho casino */
+  border: 2px solid #ff3333;
+}
+
+#btn-voltar-menu:hover {
+  background: linear-gradient(145deg, #ff1a1a, #b30000);
+  transform: scale(1.08);
+}
