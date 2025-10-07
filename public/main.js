@@ -390,8 +390,17 @@ function startGame(config) {
     renderHands();
     atualizarTrunfoLabel();
     updatePointsUI();
+
+    // ⚙️ Se for computador a começar, joga automaticamente
+    if (tiposJogador[currentTurn] === "computador") {
+      setTimeout(() => {
+        jogadaComputador(currentTurn);
+      }, 800);
+    }
+
     return;
   }
+
 
 
   iniciarNovoJogo();

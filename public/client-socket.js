@@ -126,14 +126,19 @@ socket.on("iniciar-jogo", (dados) => {
 J${jogadorQueComeca + 1} começa o jogo (baralhador-1).`;
   }
 
-  // ⏳ Espera 1 segundo para que todos leiam antes de abrir o jogo
+  // ⏳ Mostra a mensagem por 4 segundos e inicia o jogo de forma sincronizada
   setTimeout(() => {
+    if (infoBaralhadorEl) infoBaralhadorEl.textContent = ""; // limpar mensagem
     salaDiv.style.display = "none";
     document.getElementById("game").style.display = "block";
-    if (infoBaralhadorEl) infoBaralhadorEl.textContent = ""; // limpar mensagem
-    window.dispatchEvent(new CustomEvent("iniciarJogo", { detail: config }));
-  }, 1000);
+
+    // ⚙️ Dispara o evento de início de jogo após garantir renderização
+    requestAnimationFrame(() => {
+      window.dispatchEvent(new CustomEvent("iniciarJogo", { detail: config }));
+    });
+  }, 4000);
 });
+
 
 // Recebe jogada de outro jogador
 socket.on("atualizar-jogada", ({ jogadorIndex, carta }) => {
