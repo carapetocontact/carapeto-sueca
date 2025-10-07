@@ -1,0 +1,110 @@
+/* ================= SALA / LOBBY - dourado & preto ================= */
+
+#sala {
+  display: none;
+  max-width: clamp(300px, 90%, 600px);
+  margin: clamp(10px, 5vh, 60px) auto;
+  padding: clamp(12px, 3vw, 25px);
+  background: #0d0d0d;
+  color: #f5f5f5;
+  border-radius: 14px;
+  box-shadow: 0 0 25px rgba(0,0,0,0.8), 0 0 15px rgba(255,215,0,0.4);
+  text-align: center;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  border: 2px solid #d4af37;
+}
+
+#sala h2 {
+  margin-bottom: clamp(12px, 3vw, 25px);
+  font-size: clamp(1.2rem, 4vw, 1.8rem);
+  color: #ffd700;
+  text-shadow: 0 0 10px rgba(255, 215, 0, 0.9);
+}
+
+/* Lista de jogadores */
+#jogadores-lobby {
+  margin: clamp(10px, 3vw, 20px) 0;
+  text-align: left;
+  padding: clamp(8px, 2vw, 15px);
+  background: rgba(255, 215, 0, 0.05);
+  border-radius: 10px;
+  border: 1px solid rgba(255,215,0,0.2);
+  box-shadow: inset 0 0 12px rgba(0,0,0,0.5);
+}
+
+#jogadores-lobby p {
+  margin: clamp(6px, 2vw, 12px) 0;
+  padding: clamp(6px, 2vw, 12px) clamp(8px, 2vw, 14px);
+  border-radius: 6px;
+  font-size: clamp(0.9rem, 3.5vw, 1.15rem);
+  background: linear-gradient(90deg, rgba(212,175,55,0.2), rgba(0,0,0,0.2));
+  transition: transform 0.2s, background 0.3s;
+}
+
+#jogadores-lobby p:hover {
+  transform: scale(1.03);
+  background: linear-gradient(90deg, rgba(212,175,55,0.35), rgba(0,0,0,0.3));
+}
+
+/* Botões */
+#btn-pronto-lobby,
+#btn-voltar-menu {
+  margin: clamp(8px, 2vw, 15px);
+  padding: clamp(10px, 3vw, 15px) clamp(16px, 4vw, 25px);
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: clamp(0.9rem, 3.5vw, 1.1rem);
+  font-weight: bold;
+  color: black;
+  letter-spacing: 1px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.6);
+  transition: transform 0.2s, background 0.3s;
+  width: clamp(120px, 80%, 250px); /* largura adaptável */
+}
+
+/* Botão Pronto */
+#btn-pronto-lobby {
+  background: linear-gradient(145deg, #ffd700, #d4af37);
+  color: black;
+  border: 2px solid #fff3b0;
+}
+
+#btn-pronto-lobby:hover {
+  background: linear-gradient(145deg, #ffe55c, #e6c44c);
+  transform: scale(1.08);
+}
+
+/* Botão Voltar */
+#btn-voltar-menu {
+  background: linear-gradient(145deg, #1a1a1a, #333);
+  color: #ffd700;
+  border: 2px solid #d4af37;
+}
+
+#btn-voltar-menu:hover {
+  background: linear-gradient(145deg, #333, #4d4d4d);
+  transform: scale(1.08);
+}
+
+/* ================= MEDIA QUERIES ================= */
+@media (max-width: 480px) {
+  #sala {
+    margin: 5vh auto;
+    border-width: 1px;
+  }
+
+  #sala h2 {
+    font-size: clamp(1rem, 5vw, 1.3rem);
+  }
+
+  #jogadores-lobby {
+    padding: clamp(6px, 3vw, 10px);
+  }
+
+  #btn-pronto-lobby,
+  #btn-voltar-menu {
+    width: 100%; /* botões em tela cheia no iPhone */
+    margin: 8px 0;
+  }
+}
