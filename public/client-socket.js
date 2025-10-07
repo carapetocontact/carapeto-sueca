@@ -50,7 +50,6 @@ btnEntrarSala.onclick = () => {
   document.getElementById("config-online").style.display = "none";
   salaDiv.style.display = "block";
   salaNomeEl.textContent = "Sala: " + minhaSala;
-
 };
 
 // Botão PRONTO no lobby
@@ -117,11 +116,23 @@ socket.on("iniciar-jogo", (dados) => {
     debugLogSALA("Meu index final:", meuIndex);
   }
 
-  // Esconde lobby e mostra jogo
-  salaDiv.style.display = "none";
-  document.getElementById("game").style.display = "block";
+  // 👉 Mostrar mensagem do baralhador na sala antes de iniciar
+  const baralhador = dados.baralhador;
+  const jogadorQueComeca = (baralhador + 3) % 4;
+  const infoBaralhadorEl = document.getElementById("info-baralhador");
 
-  window.dispatchEvent(new CustomEvent("iniciarJogo", { detail: config }));
+  if (infoBaralhadorEl) {
+    infoBaralhadorEl.textContent = `J${baralhador + 1} vai tirar o trunfo e dar as cartas (baralhador).
+J${jogadorQueComeca + 1} começa o jogo (baralhador-1).`;
+  }
+
+  // ⏳ Espera 1 segundo para que todos leiam antes de abrir o jogo
+  setTimeout(() => {
+    salaDiv.style.display = "none";
+    document.getElementById("game").style.display = "block";
+    if (infoBaralhadorEl) infoBaralhadorEl.textContent = ""; // limpar mensagem
+    window.dispatchEvent(new CustomEvent("iniciarJogo", { detail: config }));
+  }, 1000);
 });
 
 // Recebe jogada de outro jogador
@@ -153,7 +164,7 @@ socket.on("mostrar-fim", ({ resultado }) => {
   }
 
   // Reativar botão jogar novamente
-  const btn = document.getElementById("btn-jogar-novamente");
+  const btn = document.getElementById("btn-replay");
   if (btn) btn.disabled = false;
 });
 
@@ -182,7 +193,6 @@ if (btnJogarNovamente) {
     socket.emit("restartGame", { salaId: minhaSala });
   });
 }
-
 
 // ====== FUNÇÕES AUX ======
 

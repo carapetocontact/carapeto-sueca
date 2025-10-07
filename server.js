@@ -25,14 +25,15 @@ function criarDeckEmbaralhado() {
 }
 
 // ====== Estrutura de salas ======
-let salas = {}; // { salaId: { players: [], estadoDoJogo: {...} } }
+let salas = {}; // { salaId: { players: [], estadoDoJogo: {...}, baralhador: 0 } }
 
 io.on("connection", (socket) => {
   console.log(`Cliente conectado: ${socket.id}`);
 
   // Entrar ou criar sala
   socket.on("entrar-sala", ({ salaId, nome }) => {
-    if (!salas[salaId]) salas[salaId] = { players: [], estadoDoJogo: null };
+    // cria nova sala com baralhador inicial aleatório
+    if (!salas[salaId]) salas[salaId] = { players: [], estadoDoJogo: null, baralhador: Math.floor(Math.random() * 4) };
     const sala = salas[salaId];
 
     if (sala.players.length >= 4) {
@@ -74,13 +75,17 @@ io.on("connection", (socket) => {
         io.to(salaId).emit("atualizar-jogadores", sala.players);
       }
 
+      // 🔁 Atualizar baralhador (rotação 0→1→2→3→0)
+      if (sala.baralhador === undefined) sala.baralhador = 0;
+      else sala.baralhador = (sala.baralhador + 1) % 4;
+
       // Criar baralho e distribuir cartas
       const deck = criarDeckEmbaralhado();
 
       sala.estadoDoJogo = {
-        turno: 0,
+        turno: sala.baralhador, // o jogador seguinte ao baralhador pode começar
         trunfo: deck[0],
-        jogadorComTrunfo: 0,
+        jogadorComTrunfo: sala.baralhador,
         hands: [
           deck.slice(0,10),
           deck.slice(10,20),
@@ -93,6 +98,8 @@ io.on("connection", (socket) => {
         rondaAtual: 1
       };
 
+      console.log(`Novo jogo iniciado na sala ${salaId} | Baralhador: J${sala.baralhador + 1}`);
+
       // Emitir estado do jogo para todos os clientes
       io.to(salaId).emit("iniciar-jogo", {
         jogadores: sala.players.map(p => ({
@@ -100,7 +107,7 @@ io.on("connection", (socket) => {
           tipo: p.tipo,
           index: p.index
         })),
-        baralhador: 0, // podes randomizar se quiseres
+        baralhador: sala.baralhador,
         hands: sala.estadoDoJogo.hands,
         trunfo: sala.estadoDoJogo.trunfo,
         jogadorComTrunfo: sala.estadoDoJogo.jogadorComTrunfo,
@@ -111,19 +118,16 @@ io.on("connection", (socket) => {
 
   // Receber jogada e ecoar para todos
   socket.on("jogada", ({ salaId, jogadorIndex, carta }) => {
-      const sala = salas[salaId];
-      if (!sala || !sala.estadoDoJogo) return;
+    const sala = salas[salaId];
+    if (!sala || !sala.estadoDoJogo) return;
+    io.to(salaId).emit("atualizar-jogada", { jogadorIndex, carta });
+  });
 
-      io.to(salaId).emit("atualizar-jogada", { jogadorIndex, carta });
-    });
-
-    // ====== FIM DE JOGO E REINÍCIO ======
+  // ====== FIM DE JOGO E REINÍCIO ======
   socket.on("gameEnded", ({ salaId, resultado }) => {
     const sala = salas[salaId];
     if (!sala) return;
     console.log(`Jogo terminou na sala ${salaId}`);
-
-    // Poderás guardar resultado ou estatísticas aqui
     io.to(salaId).emit("mostrar-fim", { resultado });
   });
 
@@ -132,7 +136,7 @@ io.on("connection", (socket) => {
     if (!sala) return;
     console.log(`Reiniciando jogo na sala ${salaId}`);
 
-    // Reset dos estados locais (podes limpar pontuações)
+    // Limpar bots e resetar estado
     sala.players = sala.players.filter(p => p.tipo !== "computador");
     sala.players.forEach(p => (p.pronto = false));
     sala.estadoDoJogo = null;
@@ -140,7 +144,6 @@ io.on("connection", (socket) => {
     // Envia os jogadores de volta ao lobby
     io.to(salaId).emit("voltar-para-sala");
   });
-
 
   // Desconexão
   socket.on("disconnect", () => {

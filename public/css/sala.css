@@ -46,6 +46,14 @@
   background: linear-gradient(90deg, rgba(212,175,55,0.35), rgba(0,0,0,0.3));
 }
 
+.info-baralhador {
+  margin-top: 10px;
+  color: gold;
+  font-weight: 500;
+  text-align: center;
+}
+
+
 /* Botões */
 #btn-pronto-lobby,
 #btn-voltar-menu {
