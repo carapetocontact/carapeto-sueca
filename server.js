@@ -83,9 +83,9 @@ io.on("connection", (socket) => {
       const deck = criarDeckEmbaralhado();
 
       sala.estadoDoJogo = {
-        turno: sala.baralhador, // o jogador seguinte ao baralhador pode começar
+        turno: (sala.baralhador + 3) % 4, // jogador antes do baralhador começa
         trunfo: deck[0],
-        jogadorComTrunfo: sala.baralhador,
+        jogadorComTrunfo: sala.baralhador, // baralhador tira o trunfo
         hands: [
           deck.slice(0,10),
           deck.slice(10,20),
