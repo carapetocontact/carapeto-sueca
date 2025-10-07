@@ -330,8 +330,24 @@ function finalizarJogo() {
 
   document.getElementById("btn-replay").onclick = () => {
     document.getElementById("fim-jogo-modal").classList.add("hidden");
+
+    if (onlineGame) {
+      // 🚀 Envia fim de jogo para o servidor (irá mostrar fim de jogo nos outros)
+      socket.emit("gameEnded", {
+        salaId: minhaSala,
+        resultado: {
+          pontos: { e1: lixoEquipa1.reduce((s, c) => s + pontosCarta(c), 0),
+                    e2: lixoEquipa2.reduce((s, c) => s + pontosCarta(c), 0) }
+        }
+      });
+      console.log("[ONLINE] Fim de jogo enviado ao servidor.");
+      return; // impede o recomeço automático
+    }
+
+    // Modo local ou singleplayer
     iniciarNovoJogo();
   };
+
 
   document.getElementById("btn-menu").onclick = () => {
     document.getElementById("fim-jogo-modal").classList.add("hidden");
