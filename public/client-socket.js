@@ -174,7 +174,7 @@ socket.on("voltar-para-sala", () => {
 });
 
 // ====== BOTÃO JOGAR NOVAMENTE ======
-const btnJogarNovamente = document.getElementById("btn-jogar-novamente");
+const btnJogarNovamente = document.getElementById("btn-replay");
 if (btnJogarNovamente) {
   btnJogarNovamente.addEventListener("click", () => {
     debugLogSALA("Jogador clicou em 'Jogar Novamente'");
