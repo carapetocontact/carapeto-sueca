@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sueca - Menu Atualizado</title>
+<link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="css/menu.css">
+<link rel="stylesheet" href="css/sala.css">
+<link rel="stylesheet" href="css/jogo.css">
+<link rel="stylesheet" href="css/fim.css">
+</head>
+<body>
+
+  <!-- ===== MENU INICIAL ===== -->
+  <div id="menu-inicial">
+    <h1>Sueca</h1>
+
+    <!-- Escolha do modo -->
+    <div id="modo-jogo">
+      <button data-modo="single">Singleplayer</button>
+      <button data-modo="online">Online</button>
+      <button data-modo="local">Multiplayer Local</button>
+      <button data-modo="programador">Programador</button>
+    </div>
+
+    <!-- Configurações específicas de cada modo -->
+    <!-- Singleplayer -->
+    <div id="config-single" class="config-modo" style="display:none;">
+      <label for="select-baralhador-single">Quem dá as cartas:</label>
+      <select id="select-baralhador-single">
+        <option value="0">Jogador 1</option>
+        <option value="1">Jogador 2</option>
+        <option value="2">Jogador 3</option>
+        <option value="3">Jogador 4</option>
+      </select>
+      <button id="btn-start-single">Iniciar Singleplayer</button>
+    </div>
+
+    <!-- Online -->
+    <div id="config-online" class="config-modo" style="display:none;">
+      <h2>Entrar Online</h2>
+
+      <label for="nome-jogador">Nome:</label>
+      <input type="text" id="nome-jogador" placeholder="Teu nome">
+
+      <label for="sala-id">ID da Sala:</label>
+      <input type="text" id="sala-id" placeholder="ex: 1">
+
+      <button id="btn-entrar-sala">Entrar na Sala</button>
+    </div>
+
+
+    <!-- Multiplayer Local -->
+    <div id="config-local" class="config-modo" style="display:none;">
+      <label>Número de jogadores locais:</label>
+      <select id="select-local-players">
+        <option value="2">2</option>
+        <option value="3">3</option>
+        <option value="4">4</option>
+      </select>
+      <button id="btn-start-local">Iniciar Multiplayer Local</button>
+    </div>
+
+    <!-- Programador -->
+    <div id="config-programador" class="config-modo" style="display:none;">
+      <button id="btn-start-dev">Iniciar Modo Programador</button>
+    </div>
+
+  </div>
+
+  <!-- SALA / LOBBY-->
+  <div id="sala" style="display:none;">
+    <h2 id="sala-nome">Sala: ???</h2>
+
+    <div id="jogadores-lobby">
+      <p id="j1">J1 - (vazio)</p>
+      <p id="j2">J2 - (vazio)</p>
+      <p id="j3">J3 - (vazio)</p>
+      <p id="j4">J4 - (vazio)</p>
+    </div>
+
+    <button id="btn-pronto-lobby">✅ Pronto</button>
+    <button id="btn-voltar-menu">🏠 Sair</button>
+  </div>
+  
+  <!-- ===== JOGO (escondido no início) ===== -->
+  <div id="game" style="display:none;">
+    <header><h1>Sueca</h1></header>
+    <section id="painel">
+      <div id="ronda-info">Ronda 1 / 10</div>
+      <div id="turno-info">É a tua vez de jogar!</div>
+    </section>
+
+    <div class="main-layout">
+      <div id="game-container">
+        <div id="left-panel">
+          <section id="mesa-central">
+            <div id="slot-base-j1" class="mesa-slot-base">J1</div>
+            <div id="slot-base-j2" class="mesa-slot-base">J2</div>
+            <div id="slot-base-j3" class="mesa-slot-base">J3</div>
+            <div id="slot-base-j4" class="mesa-slot-base">J4</div>
+
+            <div id="slot-j1" class="mesa-slot"></div>
+            <div id="slot-j2" class="mesa-slot"></div>
+            <div id="slot-j3" class="mesa-slot"></div>
+            <div id="slot-j4" class="mesa-slot"></div>
+
+            <div id="trunfo-label">Trunfo (J1)</div>
+            <div id="trunfo-slot" class="carta"></div>
+          </section>
+
+          <div id="round-winner">
+            <div id="round-winner-msg"></div>
+            <div id="round-winner-card"></div>
+            <button id="round-winner-btn">Continuar</button>
+          </div>
+        </div>
+
+        <div id="right-panel">
+          <section id="maos">
+            <div id="jogador1" class="mao"></div>
+            <div id="jogador2" class="mao"></div>
+            <div id="jogador3" class="mao"></div>
+            <div id="jogador4" class="mao"></div>
+          </section>
+
+          <section id="controls">
+            <button id="btn-novo-jogo">Novo Jogo</button>
+          </section>
+        </div>
+      </div>
+
+      <div id="bottom-panel">
+        <section id="lixos">
+          <div class="lixo-equipa">
+            <h3>Equipa 1 & 3</h3>
+            <div id="pontos1">Pontos: 0</div>
+            <div id="lixo1-cartas"></div>
+          </div>
+          <div class="lixo-equipa">
+            <h3>Equipa 2 & 4</h3>
+            <div id="pontos2">Pontos: 0</div>
+            <div id="lixo2-cartas"></div>
+          </div>
+        </section>
+        <section id="resultado-jogo"></section>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL FIM DE JOGO -->
+  <div id="fim-jogo-modal" class="modal hidden">
+    <div class="modal-content">
+      <h2 id="fim-jogo-titulo">🏆 Resultado</h2>
+      <p id="fim-jogo-mensagem"></p>
+      <div class="fim-jogo-pontos">
+        <span id="fim-pontos1"></span><br>
+        <span id="fim-pontos2"></span>
+      </div>
+      <button id="btn-replay">🔄 Jogar novamente</button>
+      <button id="btn-menu">🏠 Menu Inicial</button>
+    </div>
+  </div>
+
+  <!-- Scripts -->
+  <script src="menu.js"></script>
+  <script src="ia.js"></script>
+  <script src="main.js"></script>
+  <script src="/socket.io/socket.io.js"></script>
+  <script src="client-socket.js"></script>
+
+
+</body>
+</html>
