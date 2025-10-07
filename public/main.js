@@ -372,6 +372,16 @@ function startGame(config) {
   onlineGame = (modoJogo === "online");
 
   if (modoJogo === "online") {
+    // 🔄 RESET LOCAL DE ESTADO (igual ao início do iniciarNovoJogo)
+    hands = [[], [], [], []];
+    lixoEquipa1 = [];
+    lixoEquipa2 = [];
+    cardsOnTable = [];
+    rondaAtual = 1;
+    pontos1El.textContent = "Pontos: 0";
+    pontos2El.textContent = "Pontos: 0";
+
+    // Agora carrega os dados vindos do servidor
     hands = config.hands;
     trunfo = config.trunfo;
     jogadorComTrunfo = config.jogadorComTrunfo;
@@ -382,6 +392,7 @@ function startGame(config) {
     updatePointsUI();
     return;
   }
+
 
   iniciarNovoJogo();
 }
