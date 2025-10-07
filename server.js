@@ -111,11 +111,36 @@ io.on("connection", (socket) => {
 
   // Receber jogada e ecoar para todos
   socket.on("jogada", ({ salaId, jogadorIndex, carta }) => {
-    const sala = salas[salaId];
-    if (!sala || !sala.estadoDoJogo) return;
+      const sala = salas[salaId];
+      if (!sala || !sala.estadoDoJogo) return;
 
-    io.to(salaId).emit("atualizar-jogada", { jogadorIndex, carta });
+      io.to(salaId).emit("atualizar-jogada", { jogadorIndex, carta });
+    });
+
+    // ====== FIM DE JOGO E REINÍCIO ======
+  socket.on("gameEnded", ({ salaId, resultado }) => {
+    const sala = salas[salaId];
+    if (!sala) return;
+    console.log(`Jogo terminou na sala ${salaId}`);
+
+    // Poderás guardar resultado ou estatísticas aqui
+    io.to(salaId).emit("mostrar-fim", { resultado });
   });
+
+  socket.on("restartGame", ({ salaId }) => {
+    const sala = salas[salaId];
+    if (!sala) return;
+    console.log(`Reiniciando jogo na sala ${salaId}`);
+
+    // Reset dos estados locais (podes limpar pontuações)
+    sala.players = sala.players.filter(p => p.tipo !== "computador");
+    sala.players.forEach(p => (p.pronto = false));
+    sala.estadoDoJogo = null;
+
+    // Envia os jogadores de volta ao lobby
+    io.to(salaId).emit("voltar-para-sala");
+  });
+
 
   // Desconexão
   socket.on("disconnect", () => {

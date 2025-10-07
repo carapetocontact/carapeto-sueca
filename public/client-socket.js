@@ -132,6 +132,58 @@ socket.on("atualizar-jogada", ({ jogadorIndex, carta }) => {
   }
 });
 
+// ====== FIM DE JOGO ======
+socket.on("mostrar-fim", ({ resultado }) => {
+  debugLogSALA("Recebi mostrar-fim:", resultado);
+
+  // Esconde o jogo e mostra o ecrã de fim
+  const gameDiv = document.getElementById("game");
+  const fimDiv = document.getElementById("fim-jogo");
+  if (gameDiv && fimDiv) {
+    gameDiv.style.display = "none";
+    fimDiv.classList.remove("hidden");
+  }
+
+  // Atualiza pontuação se existir
+  if (resultado && resultado.pontos) {
+    const pontosEl = document.querySelector(".fim-jogo-pontos");
+    if (pontosEl) {
+      pontosEl.textContent = `Equipa 1: ${resultado.pontos.e1} | Equipa 2: ${resultado.pontos.e2}`;
+    }
+  }
+
+  // Reativar botão jogar novamente
+  const btn = document.getElementById("btn-jogar-novamente");
+  if (btn) btn.disabled = false;
+});
+
+// ====== VOLTAR PARA SALA ======
+socket.on("voltar-para-sala", () => {
+  debugLogSALA("Recebi voltar-para-sala: regressar ao lobby");
+
+  const fimDiv = document.getElementById("fim-jogo");
+  const salaDiv = document.getElementById("sala");
+  const gameDiv = document.getElementById("game");
+
+  if (fimDiv) fimDiv.classList.add("hidden");
+  if (gameDiv) gameDiv.style.display = "none";
+  if (salaDiv) salaDiv.style.display = "block";
+
+  // Reset rápido (limpar pronto e esperar novo início)
+  btnProntoLobby.disabled = false;
+});
+
+// ====== BOTÃO JOGAR NOVAMENTE ======
+const btnJogarNovamente = document.getElementById("btn-jogar-novamente");
+if (btnJogarNovamente) {
+  btnJogarNovamente.addEventListener("click", () => {
+    debugLogSALA("Jogador clicou em 'Jogar Novamente'");
+    btnJogarNovamente.disabled = true; // evita spam
+    socket.emit("restartGame", { salaId: minhaSala });
+  });
+}
+
+
 // ====== FUNÇÕES AUX ======
 
 // Enviar jogada do jogador local
