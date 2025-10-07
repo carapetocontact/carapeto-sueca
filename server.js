@@ -49,19 +49,22 @@ io.on("connection", (socket) => {
     io.to(salaId).emit("atualizar-jogadores", sala.players);
   });
 
-  // Jogador pronto
+  // ====== JOGADOR PRONTO ======
   socket.on("pronto", ({ salaId }) => {
     const sala = salas[salaId];
     if (!sala) return;
 
+    // Marca o jogador como pronto
     const player = sala.players.find(p => p.id === socket.id);
     if (player) player.pronto = true;
 
+    // Atualiza todos os jogadores na sala
     io.to(salaId).emit("atualizar-jogadores", sala.players);
 
-    // Se todos prontos e pelo menos 2 jogadores
+    // Se todos estão prontos (e há pelo menos 2 jogadores)
     if (sala.players.length >= 2 && sala.players.every(p => p.pronto)) {
-      // Preencher com bots até 4 jogadores
+
+      // ----- Completa com bots até 4 jogadores -----
       if (sala.players.length < 4) {
         for (let i = sala.players.length; i < 4; i++) {
           sala.players.push({
@@ -75,31 +78,34 @@ io.on("connection", (socket) => {
         io.to(salaId).emit("atualizar-jogadores", sala.players);
       }
 
-      // 🔁 Atualizar baralhador (rotação 0→1→2→3→0)
+      // ----- Atualiza o baralhador (antes de criar o deck) -----
       if (sala.baralhador === undefined) sala.baralhador = 0;
       else sala.baralhador = (sala.baralhador + 1) % 4;
 
-      // Criar baralho e definir trunfo
-      const deck = criarDeckEmbaralhado();
-      const trunfo = deck[0]; // mesma lógica do singleplayer
+      const baralhador = sala.baralhador;
 
-      // Distribuir cartas exatamente como no main.js
-      const hands = [
+      // ----- Cria o baralho -----
+      const deck = criarDeckEmbaralhado();
+
+      // O trunfo é sempre a primeira carta (pertence ao baralhador)
+      const trunfo = deck[0];
+
+      // ----- Distribui 10 cartas por jogador -----
+      let hands = [
         deck.slice(0,10),
         deck.slice(10,20),
         deck.slice(20,30),
         deck.slice(30,40)
       ];
 
-      // Jogador com o trunfo e turno inicial
-      const jogadorComTrunfo = sala.baralhador;
-      const turnoInicial = (sala.baralhador + 3) % 4;
+      // 👉 Rodar as mãos de forma que o baralhador receba o deck[0–9]
+      hands = hands.slice(baralhador).concat(hands.slice(0, baralhador));
 
-      // Guardar estado
+      // ----- Atualiza o estado da sala -----
       sala.estadoDoJogo = {
-        turno: turnoInicial,
+        turno: (baralhador + 3) % 4,     // jogador à esquerda do baralhador começa
         trunfo,
-        jogadorComTrunfo,
+        jogadorComTrunfo: baralhador,     // guarda quem tem o trunfo
         hands,
         cardsOnTable: [],
         lixoEquipa1: [],
@@ -107,16 +113,18 @@ io.on("connection", (socket) => {
         rondaAtual: 1
       };
 
-      console.log(`Novo jogo iniciado na sala ${salaId} | Baralhador: J${sala.baralhador + 1}`);
+      console.log(`Novo jogo na sala ${salaId}`);
+      console.log(`🃏 Baralhador: J${baralhador + 1} | Trunfo: ${trunfo.valor}${trunfo.naipe}`);
+      console.log(`➡️  Começa: J${(sala.estadoDoJogo.turno) + 1}`);
 
-      // Enviar estado a todos
+      // ----- Envia o estado do jogo a todos os jogadores -----
       io.to(salaId).emit("iniciar-jogo", {
         jogadores: sala.players.map(p => ({
           nome: p.nome,
           tipo: p.tipo,
           index: p.index
         })),
-        baralhador: sala.baralhador,
+        baralhador,
         hands: sala.estadoDoJogo.hands,
         trunfo: sala.estadoDoJogo.trunfo,
         jogadorComTrunfo: sala.estadoDoJogo.jogadorComTrunfo,
@@ -124,6 +132,7 @@ io.on("connection", (socket) => {
       });
     }
   });
+
 
 
   // Receber jogada e ecoar para todos

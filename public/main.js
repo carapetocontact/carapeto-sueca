@@ -410,35 +410,55 @@ function startGame(config) {
 function iniciarNovoJogo() {
   if (modoJogo === "single") meuIndex = 0;
 
+  // ----- Atualizar baralhador antes de começar -----
+  // (roda 0 → 1 → 2 → 3 → 0)
+  baralhadorAtual = (baralhadorAtual) % 4;
+
+  // ----- Criar baralho embaralhado -----
   const deck = embaralhar(criarBaralho());
 
+  // ----- Reset do estado local -----
   hands = [[], [], [], []];
   lixoEquipa1 = [];
   lixoEquipa2 = [];
   cardsOnTable = [];
   rondaAtual = 1;
 
-  currentTurn = (baralhadorAtual + 3) % 4;
-  jogadorComTrunfo = baralhadorAtual;
+  // ----- O trunfo é sempre a primeira carta (pertence ao baralhador) -----
   trunfo = deck[0];
+  jogadorComTrunfo = baralhadorAtual;
 
-  for (let i = 0; i < 4; i++) {
-    hands[i] = deck.slice(i * 10, (i + 1) * 10);
-  }
+  // ----- Distribuir 10 cartas por jogador -----
+  let tempHands = [
+    deck.slice(0,10),
+    deck.slice(10,20),
+    deck.slice(20,30),
+    deck.slice(30,40)
+  ];
 
-  if (meuIndex === null) meuIndex = 0;
+  // 👉 Rodar as mãos para que o baralhador receba deck[0–9]
+  hands = tempHands.slice(baralhadorAtual).concat(tempHands.slice(0, baralhadorAtual));
 
+  // ----- Definir o jogador que começa (à esquerda do baralhador) -----
+  currentTurn = (baralhadorAtual + 3) % 4;
+
+  // ----- Renderização inicial -----
   renderHands();
   atualizarTrunfoLabel();
+  updatePointsUI();
 
+  // ----- Se for computador a começar -----
   if (tiposJogador[currentTurn] === "computador") {
     setTimeout(() => {
       jogadaComputador(currentTurn);
-    }, 500);
+    }, 600);
   }
 
+  console.log(`🎴 Novo jogo iniciado`);
+  console.log(`🃏 Baralhador: J${baralhadorAtual + 1} | Trunfo: ${trunfo.valor}${trunfo.naipe}`);
+  console.log(`➡️  Começa: J${currentTurn + 1}`);
 
-
+  // ----- Atualizar baralhador para o próximo jogo -----
   baralhadorAtual = (baralhadorAtual + 1) % 4;
 }
 
