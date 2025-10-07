@@ -79,19 +79,28 @@ io.on("connection", (socket) => {
       if (sala.baralhador === undefined) sala.baralhador = 0;
       else sala.baralhador = (sala.baralhador + 1) % 4;
 
-      // Criar baralho e distribuir cartas
+      // Criar baralho e definir trunfo
       const deck = criarDeckEmbaralhado();
+      const trunfo = deck[0]; // mesma lógica do singleplayer
 
+      // Distribuir cartas exatamente como no main.js
+      const hands = [
+        deck.slice(0,10),
+        deck.slice(10,20),
+        deck.slice(20,30),
+        deck.slice(30,40)
+      ];
+
+      // Jogador com o trunfo e turno inicial
+      const jogadorComTrunfo = sala.baralhador;
+      const turnoInicial = (sala.baralhador + 3) % 4;
+
+      // Guardar estado
       sala.estadoDoJogo = {
-        turno: (sala.baralhador + 3) % 4, // jogador antes do baralhador começa
-        trunfo: deck[0],
-        jogadorComTrunfo: sala.baralhador, // baralhador tira o trunfo
-        hands: [
-          deck.slice(0,10),
-          deck.slice(10,20),
-          deck.slice(20,30),
-          deck.slice(30,40)
-        ],
+        turno: turnoInicial,
+        trunfo,
+        jogadorComTrunfo,
+        hands,
         cardsOnTable: [],
         lixoEquipa1: [],
         lixoEquipa2: [],
@@ -100,7 +109,7 @@ io.on("connection", (socket) => {
 
       console.log(`Novo jogo iniciado na sala ${salaId} | Baralhador: J${sala.baralhador + 1}`);
 
-      // Emitir estado do jogo para todos os clientes
+      // Enviar estado a todos
       io.to(salaId).emit("iniciar-jogo", {
         jogadores: sala.players.map(p => ({
           nome: p.nome,
@@ -115,6 +124,7 @@ io.on("connection", (socket) => {
       });
     }
   });
+
 
   // Receber jogada e ecoar para todos
   socket.on("jogada", ({ salaId, jogadorIndex, carta }) => {
