@@ -28,6 +28,15 @@ function escolherCartaIA(playerIndex) {
     cartasValidas = [...hand];
   }
 
+  // 🚫 Evitar destrunfar completamente (bot nunca abre com trunfo)
+  if (!leadingSuit) {
+    const semTrunfos = cartasValidas.filter(c => c.naipe !== trunfo.naipe);
+    if (semTrunfos.length > 0) {
+      debugLogIA("Evitar destrunfar — removendo trunfos das opções iniciais:", semTrunfos.map(c => c.valor+c.naipe).join(", "));
+      cartasValidas = semTrunfos;
+    }
+  }
+
   // Debug: “tem que assistir” e “pode cortar”
   let temQueAssistir = [];
   let podeCortar = [];
