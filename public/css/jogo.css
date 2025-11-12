@@ -249,14 +249,14 @@
 
 /* Modo de ordenação ativo: destaque nas cartas */
 #maos.ordering .carta {
-  box-shadow: 0 0 10px 2px gold;
+  box-shadow: 0 0 10px 2px rgb(255, 0, 0);
   transform: none !important;
   opacity: 0.95;
 }
 
 /* Carta selecionada para troca */
 .carta.selected {
-  outline: 2px solid red;
+  outline: 2px solid gold;
   transform: scale(1.1);
   z-index: 5;
 }
