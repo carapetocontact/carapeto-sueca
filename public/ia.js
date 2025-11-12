@@ -154,5 +154,9 @@ function escolherCartaIA(playerIndex) {
 // ---------- jogada do computador ----------
 function jogadaComputador(playerIndex) {
   const cardIndex = escolherCartaIA(playerIndex);
-  attemptPlayCard(playerIndex, cardIndex);
+  const cartaEscolhida = hands[playerIndex][cardIndex];
+  if (!cartaEscolhida) return;
+
+  console.log(`[IA] Jogador ${playerIndex + 1} joga ${cartaEscolhida.valor}${cartaEscolhida.naipe}`);
+  attemptPlayCard(playerIndex, cartaEscolhida);
 }
