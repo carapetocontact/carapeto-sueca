@@ -199,6 +199,7 @@
 }
 
 /* ==================== MÃOS ==================== */
+
 #maos {
   display: flex;
   flex-direction: row;
@@ -207,6 +208,7 @@
   justify-content: center;
 }
 
+/* Cada mão de jogador */
 .mao {
   display: flex;
   justify-content: center;
@@ -214,7 +216,51 @@
   gap: 2px;
 }
 
-.active .carta { box-shadow: 0 0 15px 3px yellow; }
+/* Destaque da mão ativa (quem joga) */
+.active .carta {
+  box-shadow: 0 0 15px 3px yellow;
+}
+
+/* -------------------- ORGANIZAR MÃO -------------------- */
+
+/* Botão de organizar */
+#btn-organizar-mao {
+  background-color: #222;
+  color: gold;
+  border: 1px solid gold;
+  padding: 8px 16px;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all 0.2s ease-in-out;
+  font-weight: bold;
+}
+
+#btn-organizar-mao:hover {
+  background-color: gold;
+  color: #222;
+}
+
+/* Estado ativo (modo de ordenação ligado) */
+#btn-organizar-mao.active {
+  background-color: gold;
+  color: #222;
+  box-shadow: 0 0 10px gold;
+}
+
+/* Modo de ordenação ativo: destaque nas cartas */
+#maos.ordering .carta {
+  box-shadow: 0 0 10px 2px gold;
+  transform: none !important;
+  opacity: 0.95;
+}
+
+/* Carta selecionada para troca */
+.carta.selected {
+  outline: 2px solid red;
+  transform: scale(1.1);
+  z-index: 5;
+}
+
 
 /* ==================== LIXOS ==================== */
 #lixos {
