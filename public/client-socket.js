@@ -140,19 +140,13 @@ J${jogadorQueComeca + 1} começa o jogo (baralhador-1).`;
 });
 
 
-// ====== SINCRONIZAÇÃO DE ESTADO (SAVE 6) ======
-socket.on("syncState", (estado) => {
-  debugLogSALA("[SYNC] Estado atualizado recebido:", estado);
-  if (DEBUG_SALA) console.table(estado.cardsOnTable.map(c => c.carta));
-  if (typeof atualizarMesa === "function") atualizarMesa(estado);
-  debugLogSALA(`[SYNC] Turno atual: J${estado.turno + 1}`);
+// Recebe jogada de outro jogador
+socket.on("atualizar-jogada", ({ jogadorIndex, carta }) => {
+  debugLogSALA("Recebi jogada:", jogadorIndex, carta);
+  if (jogadorIndex !== meuIndex) {
+    jogarCartaLocal(jogadorIndex, carta);
+  }
 });
-
-// Mensagem de erro (caso jogada inválida)
-socket.on("erro-jogada", (msg) => {
-  debugLogSALA("[CLIENT] Erro de jogada:", msg);
-});
-
 
 // ====== FIM DE JOGO ======
 socket.on("mostrar-fim", ({ resultado }) => {
@@ -207,16 +201,17 @@ if (btnJogarNovamente) {
 
 // ====== FUNÇÕES AUX ======
 
-// ====== Enviar jogada (SAVE 6) ======
-function enviarJogada(playerIndex, carta) {
-  debugLogSALA("[CLIENT] Enviei jogada:", playerIndex, carta);
-  socket.emit("jogada", { salaId: minhaSala, jogadorIndex: playerIndex, carta });
+// Enviar jogada do jogador local
+function enviarJogada(playerIndex, cardIndex) {
+  debugLogSALA("Enviei jogada:", playerIndex, cardIndex);
+  socket.emit("jogada", { salaId: minhaSala, jogadorIndex: playerIndex, carta: cardIndex });
 }
 
-// ====== attemptPlayCard (SAVE 6) ======
-attemptPlayCard = function(playerIndex, carta) {
+// 🚀 Override attemptPlayCard para multiplayer
+const attemptPlayCardOriginal = attemptPlayCard;
+attemptPlayCard = function(playerIndex, cardIndex) {
   if (tiposJogador[playerIndex] === "humano" && playerIndex === meuIndex) {
-    enviarJogada(playerIndex, carta); // envia apenas a intenção
+    enviarJogada(playerIndex, cardIndex);
   }
-  // não executa jogada local — aguarda syncState
+  attemptPlayCardOriginal(playerIndex, cardIndex);
 };
