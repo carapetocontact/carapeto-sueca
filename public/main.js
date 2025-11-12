@@ -106,6 +106,43 @@ function atualizarTrunfoLabel() {
     : "";
 }
 
+// ============================================================
+// 🔄 ATUALIZAR MESA (SAVE 6 - sincronização servidor)
+// ============================================================
+function atualizarMesa(estado) {
+  // Atualiza variáveis globais com o estado vindo do servidor
+  hands = estado.hands;
+  trunfo = estado.trunfo;
+  jogadorComTrunfo = estado.jogadorComTrunfo;
+  cardsOnTable = estado.cardsOnTable;
+  currentTurn = estado.turno;
+  rondaAtual = estado.rondaAtual;
+  lixoEquipa1 = estado.lixoEquipa1 || [];
+  lixoEquipa2 = estado.lixoEquipa2 || [];
+
+  // Atualiza a interface
+  document.querySelectorAll(".carta-jogada").forEach(c => c.remove());
+
+  // Renderizar cartas na mesa
+  cardsOnTable.forEach(entry => {
+    const { jogadorIndex, carta } = entry;
+    const slot = document.getElementById(`slot-j${jogadorIndex + 1}`);
+    if (slot) {
+      const div = document.createElement("div");
+      div.className = "carta carta-jogada";
+      div.textContent = `${carta.valor}${carta.naipe}`;
+      if (["♥", "♦"].includes(carta.naipe)) div.classList.add("red");
+      slot.appendChild(div);
+    }
+  });
+
+  renderHands();
+  updatePointsUI();
+  updatePanel();
+
+  console.log(`[SYNC] Estado sincronizado → turno: J${currentTurn + 1}`);
+}
+
 
 // ============================================================
 // 🚀 INÍCIO DO JOGO (evento vindo do menu ou socket)
@@ -125,6 +162,10 @@ window.addEventListener("iniciarJogo", (e) => {
 // 🎴 RENDERIZAÇÃO DAS MÃOS
 // ============================================================
 function renderHands() {
+
+  if (!hands || !hands[0]) return; 
+  // evita erro se sync chegar antes do render inicial
+
   const maosDiv = document.getElementById("maos");
   maosDiv.style.flexDirection = "row";
   maosDiv.style.flexWrap = "wrap";
@@ -163,7 +204,7 @@ function renderHands() {
         } else if (p === currentTurn) {
           // ----- MODO NORMAL (JOGAR) -----
           if (!leadingSuit || c.naipe === leadingSuit || !hasSuit) {
-            d.onclick = () => attemptPlayCard(p, i);
+            d.onclick = () => attemptPlayCard(p, hands[p][i]);
             d.classList.remove("disabled");
           } else {
             d.classList.add("disabled");
@@ -210,34 +251,47 @@ function highlightSelectedCard(index, active) {
 // ============================================================
 // 🂠 JOGAR CARTA
 // ============================================================
-function attemptPlayCard(playerIndex, cardIndex) {
+
+function attemptPlayCard(playerIndex, carta) {
   if (playerIndex !== currentTurn) return;
-  jogarCartaLocal(playerIndex, cardIndex);
+  jogarCartaLocal(playerIndex, carta);
 }
 
-function jogarCartaLocal(playerIndex, cardIndex) {
+function jogarCartaLocal(playerIndex, carta) {
+  // No modo online, o servidor é quem controla a jogada
+  if (onlineGame && tiposJogador[playerIndex] === "humano") return;
+
   const leadingSuit = cardsOnTable.length > 0 ? cardsOnTable[0].card.naipe : null;
-  const played = hands[playerIndex][cardIndex];
 
   // Valida se pode jogar
   if (leadingSuit) {
     const hasSuit = hands[playerIndex].some(c => c.naipe === leadingSuit);
-    if (hasSuit && played.naipe !== leadingSuit) return;
+    if (hasSuit && carta.naipe !== leadingSuit) return;
   }
 
-  // Remove da mão e coloca na mesa
-  hands[playerIndex].splice(cardIndex, 1);
+  // Remove carta da mão e coloca na mesa
+  const index = hands[playerIndex].findIndex(
+    c => c.valor === carta.valor && c.naipe === carta.naipe
+  );
+  if (index === -1) return;
+
+  hands[playerIndex].splice(index, 1);
+
   const dom = document.createElement("div");
   dom.className = "carta carta-jogada";
-  dom.textContent = `${played.valor}${played.naipe}`;
-  if (["♥", "♦"].includes(played.naipe)) dom.classList.add("red");
+  dom.textContent = `${carta.valor}${carta.naipe}`;
+  if (["♥", "♦"].includes(carta.naipe)) dom.classList.add("red");
   document.getElementById(`slot-j${playerIndex + 1}`).appendChild(dom);
 
-  cardsOnTable.push({ player: playerIndex, card: played });
+  cardsOnTable.push({ player: playerIndex, card: carta });
 
-  if (cardsOnTable.length === 4) setTimeout(resolveRound, 300);
-  else proximoTurno();
+  if (cardsOnTable.length === 4) {
+    setTimeout(resolveRound, 300);
+  } else {
+    proximoTurno();
+  }
 }
+
 
 
 // ============================================================
